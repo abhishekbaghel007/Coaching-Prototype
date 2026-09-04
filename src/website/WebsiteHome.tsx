@@ -1,0 +1,103 @@
+import { useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+
+type IconName = 'book'|'practice'|'test'|'chart'|'target'|'flame'|'note'|'flash'|'doubt'|'calendar'|'arrow'|'check'|'play'|'menu'|'close'|'layers';
+
+function Icon({name,size=21}:{name:IconName;size?:number}) {
+  const p={width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round' as const,strokeLinejoin:'round' as const,'aria-hidden':true};
+  const d:Record<IconName,ReactNode>={
+    book:<><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v18H7.5A2.5 2.5 0 0 0 5 22Z"/><path d="M5 4.5V22"/></>,
+    practice:<><circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/></>,
+    test:<><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></>,
+    chart:<><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-7"/></>,
+    target:<><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></>,
+    flame:<><path d="M12 21c4 0 7-2.7 7-6.6 0-3.4-2.2-5.9-4.4-8.4-.2 2-1 3.3-2.1 4.3.2-3.5-1.8-6.1-4.2-8.3.1 3.5-3.3 5.7-3.3 10.2C5 18 8 21 12 21Z"/></>,
+    note:<><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></>,
+    flash:<><path d="M12 2 5 13h6l-1 9 7-11h-6l1-9Z"/></>,
+    doubt:<><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.3 2.2c-1 .7-1.8 1.1-1.8 2.8M12 17h.01"/></>,
+    calendar:<><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></>,
+    arrow:<><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></>,
+    check:<path d="m5 12 4 4L19 6"/>,
+    play:<path d="m9 6 9 6-9 6V6Z"/>,
+    menu:<><path d="M4 7h16M4 12h16M4 17h16"/></>,
+    close:<><path d="m6 6 12 12M18 6 6 18"/></>,
+    layers:<><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></>,
+  };
+  return <svg {...p}>{d[name]}</svg>;
+}
+
+const goApp=()=>{window.location.href='/';};
+
+const features=[
+  ['practice','Practice','Chapter-wise questions, focused sessions and daily practice.','#805be6'],
+  ['test','Mock Tests','A proper test experience to build speed, accuracy and confidence.','#438fe8'],
+  ['flame','Daily DPP','A small daily question block that keeps preparation moving.','#e8a43d'],
+  ['target','Mistake Book','Keep the questions you got wrong close for another look.','#45c894'],
+  ['note','Revision','Saved questions, notes and quick revision tools in one place.','#e685ae'],
+  ['chart','Progress','See accuracy, attempts and subject-wise preparation over time.','#4fc7e5'],
+] as const;
+
+const tools=[
+  ['book','Question Bank'],['layers','PYQs'],['flash','Flashcards'],['note','NCERT Mode'],
+  ['calendar','Study Planner'],['doubt','Doubt Centre'],['chart','Performance'],['target','Mistake Book'],
+] as const;
+
+export default function WebsiteHome(){
+  const [mobile,setMobile]=useState(false);
+  const jump=(id:string)=>{setMobile(false);document.getElementById(id)?.scrollIntoView({behavior:'smooth'});};
+
+  const css=`
+    .np-site{--bg:#f5f5f7;--surface:rgba(255,255,255,.72);--surface2:#fff;--text:#1d1d1f;--muted:#6e6e73;--line:rgba(0,0,0,.08);--blue:#0071e3;--gold:#f5b940;min-height:100vh;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,system-ui,sans-serif;overflow:hidden}
+    .np-wrap{width:min(1180px,calc(100% - 64px));margin:auto}.np-nav{position:sticky;top:0;z-index:50;background:rgba(245,245,247,.78);border-bottom:1px solid var(--line);backdrop-filter:blur(25px) saturate(160%);-webkit-backdrop-filter:blur(25px) saturate(160%)}.np-navin{height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}.np-brand{display:flex;align-items:center;gap:9px;color:var(--text)}.np-logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--gold);color:#171717;font-size:14px;font-weight:800}.np-brand b{font-size:19px;letter-spacing:-.055em}.np-brand b span{color:var(--gold)}.np-navlinks{display:flex;gap:2px}.np-navlinks button,.np-login{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:999px;font-size:11px;font-weight:600}.np-navlinks button:hover{background:rgba(0,0,0,.045);color:var(--text)}.np-navactions{display:flex;align-items:center;gap:4px}.np-open{border:0;border-radius:999px;background:var(--text);color:#fff;padding:9px 13px;font-size:10px;font-weight:700}.np-mobile{display:none;border:0;background:rgba(0,0,0,.05);color:var(--text);width:36px;height:36px;border-radius:50%}
+    .np-hero{padding:110px 0 95px;background:radial-gradient(600px 300px at 72% 30%,rgba(0,113,227,.08),transparent 70%),radial-gradient(500px 260px at 35% 0%,rgba(245,185,64,.08),transparent 70%)}.np-herogrid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.np-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(0,113,227,.07);color:#0071e3;font-size:8px;font-weight:750;letter-spacing:.08em}.np-eyebrow i{width:6px;height:6px;border-radius:50%;background:#0071e3}.np-hero h1{font-size:clamp(60px,7vw,92px);line-height:.91;letter-spacing:-.075em;margin:22px 0 24px;font-weight:760}.np-hero h1 span{color:#0071e3}.np-herotext{max-width:560px;color:var(--muted);font-size:17px;line-height:1.55;letter-spacing:-.01em}.np-actions{display:flex;gap:8px;margin-top:28px}.np-primary{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background:#0071e3;color:#fff;padding:13px 17px;font-size:11px;font-weight:700;box-shadow:0 10px 25px rgba(0,113,227,.16)}.np-secondary{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:12px 16px;font-size:11px;font-weight:650}.np-trust{display:flex;flex-wrap:wrap;gap:16px;margin-top:22px;color:var(--muted);font-size:9px}.np-trust b{color:#34c759;margin-right:5px}
+    .np-art{position:relative;height:610px;display:flex;justify-content:center;align-items:center}.np-phone{position:absolute;width:320px;height:585px;right:8%;border-radius:42px;background:#080808;border:7px solid #222;box-shadow:0 40px 90px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.08);transform:rotate(3deg)}.np-notch{position:absolute;z-index:3;top:8px;left:50%;transform:translateX(-50%);width:104px;height:25px;border-radius:20px;background:#050505}.np-screen{position:absolute;inset:0;border-radius:34px;overflow:hidden;padding:47px 18px 18px;background:#f5f5f7;color:#1d1d1f}.np-minitop{display:flex;justify-content:space-between;align-items:center}.np-minibrand{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:750}.np-minin{width:21px;height:21px;border-radius:7px;display:grid;place-items:center;background:var(--gold);font-size:8px}.np-pill{font-size:7px;padding:5px 7px;border-radius:999px;background:#fff;color:#6e6e73}.np-mini-k{display:block;color:#86868b;font-size:6px;letter-spacing:.08em;font-weight:750;margin-top:20px}.np-mini-title{font-size:25px;line-height:.98;letter-spacing:-.06em;font-weight:750;margin-top:8px}.np-minihero{margin-top:18px;padding:16px;border-radius:21px;background:#1d1d1f;color:#fff}.np-minihero h3{font-size:18px;line-height:1.02;letter-spacing:-.045em;margin:8px 0}.np-minihero p{font-size:7px;color:#aaa;line-height:1.5}.np-minibtn{display:inline-block;margin-top:7px;background:#fff;color:#1d1d1f;border-radius:999px;padding:7px 9px;font-size:7px;font-weight:700}.np-minigrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.np-minicard{padding:11px;border-radius:15px;background:#fff}.np-minicard b{display:block;font-size:8px;margin-top:7px}.np-minicard small{display:block;color:#86868b;font-size:6px;margin-top:2px}.np-miniicon{width:28px;height:28px;border-radius:9px;display:grid;place-items:center}.np-p{background:#eee9ff;color:#805be6}.np-b{background:#e8f1ff;color:#0071e3}.np-o{background:#fff3df;color:#b87500}.np-g{background:#e4f8ed;color:#159447}.np-sticker{position:absolute;left:2%;bottom:32px;padding:17px 18px;border-radius:20px;background:rgba(255,255,255,.82);border:1px solid var(--line);box-shadow:0 20px 45px rgba(0,0,0,.1);backdrop-filter:blur(18px);transform:rotate(-3deg)}.np-sticker b{display:block;font-size:28px;letter-spacing:-.05em}.np-sticker span{display:block;color:var(--muted);font-size:8px;margin-top:2px}
+    .np-section{padding:105px 0;border-top:1px solid var(--line)}.np-sectionhead{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:35px}.np-sectionhead small{font-size:9px;color:var(--muted);font-weight:750;letter-spacing:.08em}.np-sectionhead h2{font-size:clamp(36px,4.5vw,54px);line-height:.98;letter-spacing:-.065em;margin:9px 0 0;font-weight:750}.np-sectionhead p{max-width:430px;color:var(--muted);font-size:13px;line-height:1.6;margin:0}.np-features{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.np-feature{min-height:205px;padding:23px;border-radius:24px;background:var(--surface);border:1px solid var(--line);box-shadow:0 7px 25px rgba(0,0,0,.025);transition:.22s}.np-feature:hover{transform:translateY(-5px);box-shadow:0 18px 38px rgba(0,0,0,.07);background:#fff}.np-ficon{width:45px;height:45px;border-radius:14px;display:grid;place-items:center;color:var(--tone);background:color-mix(in srgb,var(--tone) 10%,transparent)}.np-feature h3{font-size:18px;letter-spacing:-.035em;margin:22px 0 7px}.np-feature p{color:var(--muted);font-size:10px;line-height:1.6;max-width:320px}
+    .np-subjects{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.np-subject{padding:28px;border-radius:24px;background:var(--surface);border:1px solid var(--line)}.np-letter{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--tone) 10%,transparent);color:var(--tone);font-size:17px;font-weight:800}.np-subject h3{font-size:25px;letter-spacing:-.05em;margin:24px 0 7px}.np-subject p{font-size:10px;color:var(--muted)}.np-line{height:5px;border-radius:999px;background:rgba(0,0,0,.05);overflow:hidden;margin-top:30px}.np-line i{display:block;width:72%;height:100%;background:var(--tone);border-radius:inherit}
+    .np-journey{display:grid;grid-template-columns:1fr 1fr;gap:12px}.np-jcard{padding:28px;border-radius:27px;background:#fff;border:1px solid var(--line);box-shadow:0 7px 25px rgba(0,0,0,.025)}.np-jcard.colour{background:#1d1d1f;color:#fff}.np-jcard h3{font-size:30px;line-height:1.02;letter-spacing:-.055em;margin:17px 0 10px}.np-jcard p{font-size:11px;line-height:1.6;color:var(--muted);max-width:450px}.np-jcard.colour p{color:#aaa}.np-steps{display:grid;gap:8px;margin-top:28px}.np-step{display:flex;gap:10px;align-items:center;padding:12px;border-radius:15px;background:rgba(255,255,255,.06)}.np-stepnum{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:8px}.np-step b,.np-step span{display:block}.np-step b{font-size:9px}.np-step span{font-size:7px;color:#999;margin-top:2px}.np-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:24px}.np-tool{padding:11px;border-radius:15px;background:#f5f5f7;display:grid;grid-template-columns:30px 1fr;align-items:center;gap:8px}.np-toolicon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#fff;color:#0071e3}.np-tool b{font-size:8px}.np-tool span{grid-column:2;font-size:7px;color:var(--muted)}.np-cta{margin:0 auto 70px;padding:60px;border-radius:30px;background:#1d1d1f;color:#fff}.np-cta h2{font-size:clamp(38px,5vw,58px);letter-spacing:-.065em;line-height:.98;margin:0 0 13px}.np-cta p{max-width:560px;color:#aaa;font-size:12px;line-height:1.6}.np-footer{padding:35px 0 55px;border-top:1px solid var(--line)}.np-footin{display:flex;justify-content:space-between;gap:30px}.np-footer p{max-width:400px;color:var(--muted);font-size:9px;line-height:1.6}.np-footlinks{display:flex;gap:5px}.np-footlinks button{border:0;background:none;color:var(--muted);font-size:9px}
+    .np-mobilemenu{display:none}
+    @media(max-width:900px){.np-wrap{width:min(100% - 40px,720px)}.np-herogrid{grid-template-columns:1fr;gap:30px}.np-art{height:550px}.np-phone{right:12%}.np-features{grid-template-columns:1fr 1fr}.np-journey{grid-template-columns:1fr}.np-sectionhead{align-items:flex-start;flex-direction:column}.np-subjects{grid-template-columns:1fr}}
+    @media(max-width:680px){.np-wrap{width:calc(100% - 32px)}.np-navlinks,.np-login{display:none}.np-navactions{margin-left:auto}.np-open{display:none}.np-mobile{display:grid;place-items:center}.np-hero{padding:70px 0 55px}.np-hero h1{font-size:54px}.np-herotext{font-size:14px}.np-actions{flex-wrap:wrap}.np-primary,.np-secondary{width:100%;justify-content:center}.np-art{height:500px}.np-phone{width:272px;height:488px;right:50%;transform:translateX(50%) rotate(2deg)}.np-sticker{left:2%;bottom:0}.np-section{padding:70px 0}.np-sectionhead h2{font-size:37px}.np-features{grid-template-columns:1fr}.np-feature{min-height:165px}.np-subject{padding:22px}.np-jcard{padding:22px}.np-cta{padding:35px 22px;margin-bottom:45px}.np-footin{flex-direction:column}.np-mobilemenu{display:grid;padding:10px 16px 16px;border-top:1px solid var(--line);background:rgba(245,245,247,.94)}.np-mobilemenu button{border:0;background:none;text-align:left;padding:11px;color:var(--muted);font-size:11px}.np-mobilemenu .cta{border-radius:999px;background:#1d1d1f;color:#fff;text-align:center;margin-top:4px}}
+  `;
+
+  return <div className="np-site"><style>{css}</style>
+    <nav className="np-nav"><div className="np-wrap np-navin">
+      <a className="np-brand" href="/" onClick={e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})}}><span className="np-logo">N</span><b>neet<span>prep</span></b></a>
+      <div className="np-navlinks"><button onClick={()=>jump('features')}>Features</button><button onClick={()=>jump('subjects')}>Subjects</button><button onClick={()=>jump('journey')}>How it works</button></div>
+      <div className="np-navactions"><button className="np-login" onClick={goApp}>Log in</button><button className="np-open" onClick={goApp}>Open NEETPrep →</button></div>
+      <button className="np-mobile" onClick={()=>setMobile(v=>!v)} aria-label="Menu"><Icon name={mobile?'close':'menu'} size={18}/></button>
+    </div>{mobile&&<div className="np-mobilemenu"><button onClick={()=>jump('features')}>Features</button><button onClick={()=>jump('subjects')}>Subjects</button><button onClick={()=>jump('journey')}>How it works</button><button className="cta" onClick={goApp}>Open NEETPrep →</button></div>}</nav>
+
+    <section className="np-hero"><div className="np-wrap np-herogrid"><div>
+      <span className="np-eyebrow"><i/> BUILT FOR NEET UG PREPARATION</span>
+      <h1>Prepare every day.<br/><span>Progress every week.</span></h1>
+      <p className="np-herotext">NEETPrep brings practice, daily questions, mock tests, revision and progress together in one focused study platform.</p>
+      <div className="np-actions"><button className="np-primary" onClick={goApp}>Start Practicing <Icon name="arrow" size={14}/></button><button className="np-secondary" onClick={()=>jump('features')}>Explore NEETPrep</button></div>
+      <div className="np-trust"><span><b>✓</b>Practice questions</span><span><b>✓</b>NTA-style tests</span><span><b>✓</b>Personal progress</span><span><b>✓</b>One focused workspace</span></div>
+    </div><div className="np-art" aria-hidden="true">
+      <div className="np-phone"><div className="np-notch"/><div className="np-screen"><div className="np-minitop"><div className="np-minibrand"><span className="np-minin">N</span>neetprep</div><span className="np-pill">🔥 7 days</span></div><span className="np-mini-k">NEET UG 2027 · DAILY PREP</span><div className="np-mini-title">What are we<br/>solving today?</div><div className="np-minihero"><span className="np-mini-k">TODAY'S DPP</span><h3>20 questions.<br/>20 focused minutes.</h3><p>A small block to keep your preparation moving every day.</p><span className="np-minibtn">Start DPP →</span></div><div className="np-minigrid">
+        <div className="np-minicard"><div className="np-miniicon np-p"><Icon name="practice" size={14}/></div><b>Practice</b><small>10 questions</small></div>
+        <div className="np-minicard"><div className="np-miniicon np-b"><Icon name="test" size={14}/></div><b>Mock Tests</b><small>Real exam flow</small></div>
+        <div className="np-minicard"><div className="np-miniicon np-o"><Icon name="book" size={14}/></div><b>Saved</b><small>Revise later</small></div>
+        <div className="np-minicard"><div className="np-miniicon np-g"><Icon name="target" size={14}/></div><b>Mistakes</b><small>Repair weak spots</small></div>
+      </div></div></div><div className="np-sticker"><b>720</b><span>marks in the NEET pattern</span></div>
+    </div></div></section>
+
+    <section className="np-section" id="features"><div className="np-wrap"><div className="np-sectionhead"><div><small>ONE PREP SPACE</small><h2>Everything you need to study.</h2></div><p>No complicated setup. Pick what you need, solve, review, and get back to preparation.</p></div>
+      <div className="np-features">{features.map(([icon,title,text,tone])=><article key={title} className="np-feature" style={{'--tone':tone} as CSSProperties}><div className="np-ficon"><Icon name={icon} size={21}/></div><h3>{title}</h3><p>{text}</p></article>)}</div>
+    </div></section>
+
+    <section className="np-section" id="subjects"><div className="np-wrap"><div className="np-sectionhead"><div><small>YOUR NEET SYLLABUS</small><h2>Three subjects. One clear system.</h2></div><p>Each subject gets its own identity while the overall experience stays consistent.</p></div>
+      <div className="np-subjects">{[['P','Physics','Concepts · Numericals · Practice','#438fe8'],['C','Chemistry','Physical · Organic · Inorganic','#45c9b5'],['B','Biology','Botany · Zoology · NCERT','#4dc88e']].map(([letter,name,text,tone])=><article className="np-subject" key={name} style={{'--tone':tone} as CSSProperties}><div className="np-letter">{letter}</div><h3>{name}</h3><p>{text}</p><div className="np-line"><i/></div></article>)}</div>
+    </div></section>
+
+    <section className="np-section" id="journey"><div className="np-wrap"><div className="np-sectionhead"><div><small>THE DAILY LOOP</small><h2>Simple enough to actually use.</h2></div><p>The product should help a student decide what to do next, not make them study the interface.</p></div>
+      <div className="np-journey"><article className="np-jcard colour"><span className="np-eyebrow">YOUR DAY</span><h3>Open. Practice.<br/>Review. Repeat.</h3><p>Start with a daily target, continue your preparation, or jump straight into a test when you're ready.</p><div className="np-steps"><div className="np-step"><span className="np-stepnum">01</span><div><b>Choose today's work</b><span>DPP, practice or revision</span></div></div><div className="np-step"><span className="np-stepnum">02</span><div><b>See what happened</b><span>Accuracy and mistakes</span></div></div><div className="np-step"><span className="np-stepnum">03</span><div><b>Come back tomorrow</b><span>Keep your streak moving</span></div></div></div></article>
+        <article className="np-jcard"><span className="np-eyebrow" style={{color:'#e9b54f',background:'rgba(233,181,79,.08)',borderColor:'rgba(233,181,79,.14)'}}>STUDY CENTRE</span><h3>A bigger toolkit, when you need it.</h3><p>Keep the home experience focused. Open the Study Centre when you want the full preparation toolbox.</p><div className="np-tools">{tools.map(([icon,title])=><div className="np-tool" key={title}><div className="np-toolicon"><Icon name={icon} size={15}/></div><b>{title}</b><span>Inside the student app</span></div>)}</div></article>
+      </div>
+    </div></section>
+
+    <section className="np-wrap"><div className="np-cta"><h2>Your next question is waiting.</h2><p>Open NEETPrep and turn today's preparation into one more solved question, one more reviewed mistake, and one more step forward.</p><button className="np-primary" onClick={goApp}>Open NEETPrep <Icon name="arrow" size={14}/></button></div></section>
+
+    <footer className="np-footer"><div className="np-wrap np-footin"><div><a className="np-brand" href="/"><span className="np-logo">N</span><b>neet<span>prep</span></b></a><p>A focused NEET UG preparation platform for practice, tests, revision and progress.</p></div><div className="np-footlinks"><button onClick={()=>jump('features')}>Features</button><button onClick={()=>jump('subjects')}>Subjects</button><button onClick={()=>jump('journey')}>How it works</button><button onClick={goApp}>Student App</button></div></div></footer>
+  </div>;
+}
