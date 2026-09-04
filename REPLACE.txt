@@ -1,0 +1,18 @@
+NEETPrep Apple UI - REAL FINAL PASS
+
+BASELINE: last NEETPrep Apple UI + Back/Account version.
+
+Replace these existing files:
+- src/App.tsx
+- src/student/StudentExperience.tsx
+- src/website/WebsiteHome.tsx
+- index.html
+
+Targeted fixes in this pass:
+1. Android/browser back guard strengthened, including popstate/hashchange and native WebView/Cordova backbutton event when available. Back opens the NEETPrep main menu instead of leaving the app.
+2. Fixed inert Apple CSS caused by undefined --np-* variables in App.tsx. These rules now use the app's real variables, so CBT/navigation/header polish actually applies.
+3. Mobile/system status-bar background now follows the app background from first paint and at runtime.
+4. Study Centre is more opaque and layered so the page behind it does not bleed through; icon depth retained.
+5. Website duplicate nav selector is kept from the latest baseline; WebsiteHome remains functionally unchanged.
+
+No database, Supabase, question data, auth logic, or routes were intentionally changed.
