@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { buildPrepIntelligence, type Subject, type SubjectStats } from './prepIntelligence';
 
-type Subject = 'Physics' | 'Chemistry' | 'Biology';
-type Stats = Record<Subject, { attempted: number; correct: number; incorrect: number }>;
+type Stats = SubjectStats;
 
 type PrepDNA = {
   stage: 'Class 11' | 'Class 12' | 'Dropper';
@@ -30,6 +30,7 @@ type Props = {
   onPractice: (count: number, title: string, ids?: string[]) => void;
   onGo: (tab: 'practice' | 'mocks' | 'saved' | 'mistakes' | 'progress') => void;
   questionIds: string[];
+  subjectQuestionIds: Record<Subject, string[]>;
 };
 
 const DNA_KEY = 'neetprep-prep-dna-v1';
@@ -69,6 +70,9 @@ export default function StudentExperience(props: Props) {
   const [dnaOpen, setDnaOpen] = useState(false);
   const [missions, setMissions] = useState<Record<string, boolean>>(() => load<Record<string, boolean>>(MISSION_KEY, {}));
   const [moreOpen, setMoreOpen] = useState(false);
+  const [intelligenceOpen, setIntelligenceOpen] = useState(false);
+
+  const intelligence = useMemo(() => buildPrepIntelligence(props.stats, props.mistakes.length, props.today, props.dailyGoal, props.target), [props.stats, props.mistakes.length, props.today, props.dailyGoal, props.target]);
 
   const firstName = props.user?.user_metadata?.display_name || props.user?.email?.split('@')[0] || 'Student';
   const hour = new Date().getHours();
@@ -95,14 +99,38 @@ export default function StudentExperience(props: Props) {
     save(MISSION_KEY, next);
   };
 
-  const startQuick = (count: number, title: string) => props.onPractice(count, title);
+  const startQuick = (count: number, title: string, ids?: string[]) => props.onPractice(count, title, ids);
+  const startSmart = () => {
+    if (intelligence.action === 'repair' && props.mistakes.length) {
+      startQuick(Math.min(10, props.mistakes.length), `${intelligence.subject ?? 'Mistake'} repair`, props.mistakes);
+      return;
+    }
+    if (intelligence.subject) {
+      startQuick(10, `${intelligence.subject} focus`, props.subjectQuestionIds[intelligence.subject]);
+      return;
+    }
+    startQuick(10, 'First signal');
+  };
 
   const persistDNA = () => {
     save(DNA_KEY, dna);
     setDnaOpen(false);
   };
 
+  const v2Css = `
+    .os-intel-card{margin:18px 0;padding:20px;border:1px solid color-mix(in srgb,var(--accent,#58d0c0) 28%,transparent);border-radius:26px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));box-shadow:0 18px 50px rgba(0,0,0,.18);cursor:pointer;overflow:hidden;position:relative}
+    .os-intel-card:before{content:"";position:absolute;inset:-60px auto auto -40px;width:150px;height:150px;border-radius:50%;background:var(--accent,#58d0c0);opacity:.10;filter:blur(30px);pointer-events:none}
+    .os-intel-top,.os-intel-footer,.os-intel-main{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .os-intel-main{align-items:flex-start;margin-top:10px}.os-intel-main h2{margin:0;font-size:24px;letter-spacing:-.6px}.os-intel-main p{margin:7px 0 0;color:var(--muted,#94a0ad);line-height:1.5;font-size:13px;max-width:520px}
+    .os-intel-live{font-size:9px;letter-spacing:1.3px;padding:6px 9px;border-radius:999px;background:rgba(88,208,192,.11);color:var(--accent,#58d0c0);font-weight:800}
+    .os-intel-score{min-width:68px;text-align:right}.os-intel-score strong{display:block;font-size:28px;letter-spacing:-1px}.os-intel-score small{color:var(--muted,#94a0ad);font-size:10px}
+    .os-intel-footer{margin-top:17px;padding-top:13px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:var(--muted,#94a0ad)}.os-intel-footer button{border:0;background:none;color:var(--text,#fff);font-weight:800;cursor:pointer}
+    .os-intel-modal{max-width:520px}.os-intel-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0}.os-intel-metrics div{padding:13px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07)}.os-intel-metrics small,.os-intel-reason span{display:block;font-size:9px;letter-spacing:1.2px;color:var(--muted,#94a0ad);font-weight:800}.os-intel-metrics strong{display:block;margin-top:5px;font-size:17px}.os-intel-reason{padding:15px;border-radius:18px;background:rgba(88,208,192,.07);border:1px solid rgba(88,208,192,.14);margin-bottom:18px}.os-intel-reason b{display:block;margin-top:7px;line-height:1.5;font-size:13px}
+    @media(max-width:520px){.os-intel-card{border-radius:22px;padding:17px}.os-intel-main h2{font-size:20px}.os-intel-main p{font-size:12px}.os-intel-score{min-width:55px}.os-intel-score strong{font-size:23px}.os-intel-footer{align-items:flex-start}.os-intel-metrics{grid-template-columns:1fr 1fr}.os-intel-metrics div:last-child{grid-column:1/-1}}
+  `;
+
   return <>
+    <style>{v2Css}</style>
     <div className="student-os">
       <section className="os-hero">
         <div>
@@ -116,6 +144,12 @@ export default function StudentExperience(props: Props) {
       <section className="os-command-card">
         <div className="os-command-top"><div><span className="os-kicker">TODAY'S MISSION</span><strong>{props.today >= props.dailyGoal ? 'Mission complete.' : `${props.dailyGoal} questions.`}</strong><p>{props.today >= props.dailyGoal ? 'You did the important part. Keep the streak clean.' : 'A compact, high-signal session built around consistency.'}</p></div><div className="os-ring" style={{ '--p': `${Math.min(100, Math.round((props.today / props.dailyGoal) * 100))}%` } as CSSProperties}><span>{Math.min(100, Math.round((props.today / props.dailyGoal) * 100))}%</span></div></div>
         <button className="os-primary" onClick={() => startQuick(props.dailyGoal, 'Daily Mission')}><span>{props.today >= props.dailyGoal ? 'Run another set' : 'Enter mission'}</span>{icon('arrow')}</button>
+      </section>
+
+      <section className="os-intel-card" onClick={() => setIntelligenceOpen(true)}>
+        <div className="os-intel-top"><span className="os-kicker">PREP INTELLIGENCE · V2</span><span className="os-intel-live">LIVE SIGNAL</span></div>
+        <div className="os-intel-main"><div><h2>{intelligence.headline}</h2><p>{intelligence.detail}</p></div><div className="os-intel-score"><strong>{intelligence.subject ? `${intelligence.accuracy}%` : '—'}</strong><small>{intelligence.subject ? intelligence.subject : 'Need data'}</small></div></div>
+        <div className="os-intel-footer"><span>{intelligence.recoveryMarks > 0 ? `+${intelligence.recoveryMarks} marks recoverable` : 'Signal building from your answers'}</span><button onClick={(e) => { e.stopPropagation(); startSmart(); }}>Start smart →</button></div>
       </section>
 
       <section className="os-recovery">
@@ -164,6 +198,8 @@ export default function StudentExperience(props: Props) {
         <div className="os-level-track"><i style={{ width: `${xpPct}%` }} /></div><small>{xpIntoLevel}/500 XP to next level</small>
       </section>
     </div>
+
+    {intelligenceOpen && <div className="os-backdrop" onMouseDown={() => setIntelligenceOpen(false)}><div className="os-modal os-intel-modal" onMouseDown={e => e.stopPropagation()}><button className="os-close" onClick={() => setIntelligenceOpen(false)}>×</button><span className="os-kicker">PREP INTELLIGENCE</span><h2>Your next best move.</h2><p>NEETPrep V2 turns your recent performance into a practical recommendation. No mystical AI fog machine required.</p><div className="os-intel-metrics"><div><small>REPAIR LANE</small><strong>{intelligence.subject ?? 'Building signal'}</strong></div><div><small>ACCURACY</small><strong>{intelligence.subject ? `${intelligence.accuracy}%` : '—'}</strong></div><div><small>RECOVERABLE</small><strong>+{intelligence.recoveryMarks}</strong></div></div><div className="os-intel-reason"><span>WHY THIS</span><b>{intelligence.detail}</b></div><button className="os-primary full" onClick={startSmart}>Run recommended session</button></div></div>}
 
     {dnaOpen && <div className="os-backdrop" onMouseDown={() => setDnaOpen(false)}><div className="os-modal" onMouseDown={e => e.stopPropagation()}><button className="os-close" onClick={() => setDnaOpen(false)}>×</button><span className="os-kicker">PREP DNA</span><h2>Tell us how you prepare.</h2><p>NEETPrep uses this to shape your daily rhythm. You can change it anytime.</p><label>Stage<select value={dna.stage} onChange={e => setDna({ ...dna, stage: e.target.value as PrepDNA['stage'] })}><option>Class 11</option><option>Class 12</option><option>Dropper</option></select></label><label>Coaching<select value={dna.coaching} onChange={e => setDna({ ...dna, coaching: e.target.value as PrepDNA['coaching'] })}><option>Offline coaching</option><option>Online coaching</option><option>Hybrid</option><option>Self study</option></select></label><label>Focused study hours <input type="range" min="1" max="14" value={dna.hours} onChange={e => setDna({ ...dna, hours: Number(e.target.value) })}/><span className="os-range-value">{dna.hours}h / day</span></label><label>Best focus window<select value={dna.focus} onChange={e => setDna({ ...dna, focus: e.target.value as PrepDNA['focus'] })}><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Night</option></select></label><div className="os-modal-preview"><span>YOUR RHYTHM</span><strong>{dna.hours}h · {dna.focus.toLowerCase()} · {dna.coaching}</strong></div><button className="os-primary full" onClick={persistDNA}>Save my Prep DNA</button></div></div>}
 
