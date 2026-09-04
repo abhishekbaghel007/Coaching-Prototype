@@ -1,0 +1,53 @@
+
+:root {
+  --np-primary: #e9b44f;
+  --np-primary-strong: #d99d34;
+  --np-mint: #57d1bf;
+  --np-violet: #8a67e8;
+  --np-blue: #4e93e8;
+  --np-rose: #e7849f;
+  --np-coral: #ed806f;
+  --np-bg: #080d10;
+  --np-surface: #10171b;
+  --np-surface-2: #151e23;
+  --np-surface-3: #1a252a;
+  --np-text: #f5f7f7;
+  --np-muted: #8c999f;
+  --np-soft: #b8c2c6;
+  --np-border: rgba(255,255,255,.075);
+  --np-border-strong: rgba(255,255,255,.12);
+  --np-radius-sm: 11px;
+  --np-radius-md: 15px;
+  --np-radius-lg: 20px;
+  --np-radius-xl: 27px;
+  --np-shadow-sm: 0 8px 28px rgba(0,0,0,.14);
+  --np-shadow-md: 0 18px 55px rgba(0,0,0,.22);
+  --np-shadow-glow: 0 18px 50px rgba(233,180,79,.10);
+  --np-content: 1180px;
+  --np-space-1: 4px;
+  --np-space-2: 8px;
+  --np-space-3: 12px;
+  --np-space-4: 16px;
+  --np-space-5: 20px;
+  --np-space-6: 24px;
+  --np-space-8: 32px;
+  --np-space-10: 40px;
+  --np-space-12: 48px;
+}
+
+:root[data-theme='light'] {
+  --np-bg: #f5f7f7;
+  --np-surface: #ffffff;
+  --np-surface-2: #f0f3f4;
+  --np-surface-3: #e8edef;
+  --np-text: #172023;
+  --np-muted: #657278;
+  --np-soft: #4d5b60;
+  --np-border: rgba(20,35,40,.09);
+  --np-border-strong: rgba(20,35,40,.14);
+  --np-shadow-sm: 0 8px 28px rgba(20,35,40,.07);
+  --np-shadow-md: 0 18px 55px rgba(20,35,40,.10);
+}
+
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; }
