@@ -4,6 +4,7 @@ import App from './App';
 import AdminApp from './AdminApp';
 import WebsiteHome from './website/WebsiteHome';
 import './index.css';
+import './design/stable-app-web-shell.css';
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
 const isAdmin = path === '/admin' || path.startsWith('/admin/');
