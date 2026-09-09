@@ -1,0 +1,50 @@
+/* Stable shell replacement: fixes the viewport/side gutters without changing feature logic. */
+html,body,#root{width:100%!important;min-width:0!important;min-height:100%!important;height:auto!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;touch-action:auto!important;overscroll-behavior:auto!important;background:#080c10!important}
+body{position:static!important}
+#root{position:relative!important;display:block!important}
+
+/* Student app: one document, one vertical scroller. */
+html body #root .app{width:100%!important;min-width:0!important;min-height:100dvh!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#080c10!important}
+html body #root .np-home{width:100%!important;min-width:0!important;min-height:100dvh!important;height:auto!important;max-height:none!important;margin:0!important;overflow:visible!important;overflow-x:hidden!important;overflow-y:visible!important;touch-action:auto!important;background:#080c10!important}
+html body #root .np-home-main{width:min(1240px,calc(100% - 44px))!important;min-width:0!important;height:auto!important;max-height:none!important;margin-inline:auto!important;overflow:visible!important;overflow-y:visible!important;touch-action:auto!important}
+html body #root .np-home-header{width:100%!important;min-width:0!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important}
+
+/* Eliminate the visible side-color split. The centered content may remain bounded,
+   but the shell behind it is the exact same dark surface on every pixel. */
+html body,#root,html body #root .app,html body #root .np-home{background:#080c10!important}
+html body #root .np-home-main{background:transparent!important}
+
+/* Keep decorative layers from intercepting gestures. */
+html body #root .np-home::before,html body #root .np-home::after{pointer-events:none!important}
+html body #root .np-orb{pointer-events:none!important}
+
+/* Bottom navigation is chrome, not a scroll container. */
+html body #root .np-home .np-bottom{position:fixed!important;z-index:1000!important;touch-action:manipulation!important;pointer-events:auto!important}
+html body #root .np-home .np-bottom *{touch-action:manipulation!important}
+
+/* Sheets only capture interaction when they exist. */
+html body #root .np-home .np-sheet-backdrop{position:fixed!important;inset:0!important;z-index:2000!important;touch-action:none!important}
+html body #root .np-home .np-sheet{max-height:calc(100dvh - env(safe-area-inset-top))!important;overflow-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+
+/* Website: force one full-width surface as well. */
+html body #root .np-site{width:100%!important;min-width:0!important;min-height:100dvh!important;height:auto!important;max-height:none!important;overflow:visible!important;overflow-x:hidden!important;overflow-y:visible!important;background:var(--bg,#080c10)!important}
+html body #root .np-site .np-wrap,html body #root .np-site .np-page,html body #root .np-site .np-container{min-width:0!important;max-width:1240px!important;margin-inline:auto!important}
+
+/* Mobile: predictable single-column flow. */
+@media(max-width:900px){
+  html body #root .np-home-main{width:calc(100% - 24px)!important}
+  html body #root .np-home{padding-bottom:0!important}
+  html body #root .np-welcome{min-width:0!important}
+  html body #root .np-quick-grid{grid-template-columns:1fr 1fr!important}
+  html body #root .np-columns{grid-template-columns:1fr!important}
+  html body #root .np-stats{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:560px){
+  html body #root .np-home-main{width:calc(100% - 16px)!important;padding-bottom:140px!important}
+  html body #root .np-home-header{min-height:calc(63px + env(safe-area-inset-top))!important;height:auto!important}
+  html body #root .np-welcome{padding-top:40px!important}
+  html body #root .np-dpp{min-height:290px!important;padding:24px!important}
+  html body #root .np-bottom{left:50%!important;right:auto!important;bottom:max(8px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:calc(100% - 12px)!important}
+}
+
+@media(prefers-reduced-motion:reduce){html body #root *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
