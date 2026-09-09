@@ -5,8 +5,6 @@ import AdminApp from './AdminApp';
 import WebsiteHome from './website/WebsiteHome';
 import ProgressFinal from './progress/ProgressFinal';
 import './index.css';
-import './design/stable-app-web-shell.css';
-import './design/page-scroll-v2.css';
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
 const isAdmin = path === '/admin' || path.startsWith('/admin/');
@@ -14,49 +12,46 @@ const isWebsite = path === '/website' || path.startsWith('/website/');
 const isProgress = path === '/progress' || path.startsWith('/progress/');
 const isWebsiteProgress = path === '/website/progress';
 
-function StudentShell() {
-  const [progressOpen, setProgressOpen] = useState(false);
+function useProgressLauncher() {
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (window.location.pathname !== '/' && window.location.pathname !== '') return;
-    const handler = (event: MouseEvent) => {
+    const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       const clickable = target?.closest('button,a,[role="button"]') as HTMLElement | null;
       if (!clickable) return;
       const label = (clickable.textContent || '').trim().toLowerCase();
-      if (label === 'progress' || label === 'view progress' || label === 'performance' || label.includes('progress')) {
-        event.preventDefault(); event.stopPropagation(); setProgressOpen(true);
+      if (label === 'progress' || label === 'view progress' || label === 'performance') {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(true);
       }
     };
-    document.addEventListener('click', handler, true);
-    return () => document.removeEventListener('click', handler, true);
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
   }, []);
-  return <><App />{progressOpen && <ProgressFinal onClose={() => setProgressOpen(false)} />}</>;
+  return [open, setOpen] as const;
+}
+
+function StudentShell() {
+  const [open, setOpen] = useProgressLauncher();
+  return <><App />{open && <ProgressFinal onClose={() => setOpen(false)} />}</>;
 }
 
 function WebsiteShell() {
-  const [progressOpen, setProgressOpen] = useState(false);
-  useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      const clickable = target?.closest('button,a,[role="button"]') as HTMLElement | null;
-      if (!clickable) return;
-      const label = (clickable.textContent || '').trim().toLowerCase();
-      if (label === 'progress' || label === 'view progress' || label === 'performance' || label.includes('progress')) {
-        event.preventDefault(); event.stopPropagation(); setProgressOpen(true);
-      }
-    };
-    document.addEventListener('click', handler, true);
-    return () => document.removeEventListener('click', handler, true);
-  }, []);
-  return <><WebsiteHome />{progressOpen && <ProgressFinal website onClose={() => setProgressOpen(false)} />}</>;
+  const [open, setOpen] = useProgressLauncher();
+  return <><WebsiteHome />{open && <ProgressFinal website onClose={() => setOpen(false)} />}</>;
 }
+
+const ProgressRoute = ({ website = false }: { website?: boolean }) => (
+  <ProgressFinal website={website} onClose={() => { window.location.href = website ? '/website' : '/'; }} />
+);
 
 const Root = isAdmin
   ? AdminApp
   : isWebsiteProgress
-    ? () => <ProgressFinal website onClose={() => { window.location.href = '/website'; }} />
+    ? () => <ProgressRoute website />
     : isProgress
-      ? () => <ProgressFinal onClose={() => { window.location.href = '/'; }} />
+      ? ProgressRoute
       : isWebsite
         ? WebsiteShell
         : StudentShell;
