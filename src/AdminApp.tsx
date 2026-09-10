@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { getStaffRole } from './admin/admin';
-import TeacherCommandCenter from './admin/TeacherCommandCenter';
+import TeacherCommandCenterEnhanced from './admin/TeacherCommandCenterEnhanced';
 
 const adminCss = `
 .admin-auth-shell{min-height:100vh;background:#07090b;color:#f4f7f8;display:grid;place-items:center;padding:28px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;position:relative;overflow:hidden}
@@ -99,7 +99,7 @@ export default function AdminApp() {
   }
 
   if (user) {
-    return <TeacherCommandCenter user={user} onExit={exitToStudentApp} />;
+    return <TeacherCommandCenterEnhanced user={user} onExit={exitToStudentApp} />;
   }
 
   return (
