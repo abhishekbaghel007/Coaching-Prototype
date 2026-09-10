@@ -1,0 +1,207 @@
+/* NEETPrep Home Refresh
+   Inspired by Apple platform principles: content-first hierarchy, glass materials,
+   expressive but intentional color, rounded controls, and chart-led summaries.
+   This is an original NEETPrep visual system, not a copy of Apple's UI.
+*/
+
+/* ========================= STUDENT HOME ========================= */
+.student-v7.student-v7{
+  --home-ink:#f7f9ff !important;
+  --home-muted:#9ca9bb !important;
+  --home-blue:#0a84ff !important;
+  --home-purple:#8b5cf6 !important;
+  --home-cyan:#22d3ee !important;
+  --home-green:#34d399 !important;
+  --home-orange:#ff9f0a !important;
+  --home-pink:#ff375f !important;
+  --home-yellow:#ffd60a !important;
+  --home-glass:rgba(255,255,255,.055) !important;
+  --home-border:rgba(255,255,255,.10) !important;
+  max-width:1240px !important;
+  padding:10px 0 100px !important;
+  position:relative !important;
+  isolation:isolate;
+}
+.student-v7.student-v7:before{
+  content:"";position:fixed;z-index:-2;inset:0;pointer-events:none;
+  background:
+    radial-gradient(700px 520px at 8% 8%,rgba(10,132,255,.15),transparent 70%),
+    radial-gradient(620px 500px at 92% 15%,rgba(139,92,246,.16),transparent 70%),
+    radial-gradient(700px 520px at 55% 72%,rgba(34,211,238,.09),transparent 72%),
+    radial-gradient(500px 450px at 12% 90%,rgba(255,55,95,.08),transparent 70%) !important;
+  filter:saturate(115%);
+}
+.student-v7.student-v7:after{
+  content:"";position:fixed;z-index:-1;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,8,15,.18),rgba(5,8,15,.84) 72%,#05080e 100%) !important;
+}
+
+.student-v7.student-v7 .v7-top{
+  height:64px !important;padding:0 2px 14px !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+}
+.student-v7.student-v7 .v7-logo{
+  width:42px !important;height:42px !important;border-radius:14px !important;
+  background:linear-gradient(145deg,#fff,#dbeafe) !important;color:#101827 !important;
+  box-shadow:0 8px 28px rgba(10,132,255,.24),inset 0 1px rgba(255,255,255,.9) !important;
+}
+.student-v7.student-v7 .v7-brand-name{font-size:22px !important;letter-spacing:-1px !important}
+.student-v7.student-v7 .v7-round{
+  width:43px !important;height:43px !important;border-radius:50% !important;
+  background:rgba(255,255,255,.065) !important;border:1px solid rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(20px) saturate(140%) !important;
+}
+.student-v7.student-v7 .v7-round:hover{background:rgba(255,255,255,.11) !important}
+
+.student-v7.student-v7 .v7-welcome{padding:62px 2px 24px !important}
+.student-v7.student-v7 .v7-welcome small{color:#9bb1c9 !important;letter-spacing:.16em !important}
+.student-v7.student-v7 .v7-welcome h1{
+  font-size:clamp(44px,5.5vw,72px) !important;letter-spacing:-4.4px !important;
+  line-height:.94 !important;margin:13px 0 !important;
+  background:linear-gradient(100deg,#fff 5%,#dbeafe 38%,#9b8cff 68%,#55d9ff 95%);
+  -webkit-background-clip:text;background-clip:text;color:transparent !important;
+}
+.student-v7.student-v7 .v7-welcome p{color:#a2afbf !important;font-size:15px !important;max-width:680px !important}
+
+.student-v7.student-v7 .v7-course{
+  background:rgba(255,255,255,.055) !important;border:1px solid rgba(255,255,255,.10) !important;
+  box-shadow:0 12px 45px rgba(0,0,0,.14),inset 0 1px rgba(255,255,255,.07) !important;
+  backdrop-filter:blur(22px) saturate(140%) !important;
+}
+.student-v7.student-v7 .v7-course-icon{background:linear-gradient(145deg,rgba(10,132,255,.22),rgba(139,92,246,.16)) !important;color:#69b5ff !important}
+.student-v7.student-v7 .v7-edit{color:#64b5ff !important}
+
+.student-v7.student-v7 .v7-hero{
+  min-height:295px !important;padding:38px 38px 34px !important;border-radius:32px !important;
+  background:
+    radial-gradient(520px 260px at 85% 5%,rgba(10,132,255,.25),transparent 68%),
+    radial-gradient(420px 250px at 8% 100%,rgba(139,92,246,.22),transparent 68%),
+    linear-gradient(135deg,rgba(27,35,53,.92),rgba(13,18,30,.92)) !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  box-shadow:0 30px 90px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.09) !important;
+  overflow:hidden;position:relative;
+}
+.student-v7.student-v7 .v7-hero:after{
+  content:"";position:absolute;right:-120px;top:-160px;width:380px;height:380px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.10);box-shadow:0 0 0 45px rgba(255,255,255,.018),0 0 0 90px rgba(255,255,255,.012);pointer-events:none;
+}
+.student-v7.student-v7 .v7-kicker{color:#67e8d6 !important;font-weight:900 !important;letter-spacing:.12em !important}
+.student-v7.student-v7 .v7-hero h2{font-size:clamp(32px,4.2vw,51px) !important;letter-spacing:-2.7px !important}
+.student-v7.student-v7 .v7-hero p{color:#a8b4c4 !important;font-size:13px !important}
+.student-v7.student-v7 .v7-ring{
+  background:conic-gradient(#22d3ee var(--v7p),rgba(255,255,255,.10) 0) !important;
+  box-shadow:0 0 34px rgba(34,211,238,.16) !important;
+}
+.student-v7.student-v7 .v7-ring:before{background:#101726 !important}
+.student-v7.student-v7 .v7-chip{background:rgba(255,255,255,.065) !important;border-color:rgba(255,255,255,.10) !important;color:#c7d4e5 !important}
+.student-v7.student-v7 .v7-hero-btn{
+  background:linear-gradient(135deg,#0a84ff,#5b5ce2) !important;color:white !important;
+  border:0 !important;box-shadow:0 12px 30px rgba(10,132,255,.24) !important;
+}
+
+.student-v7.student-v7 .v7-section{margin-top:62px !important}
+.student-v7.student-v7 .v7-label{color:#7e91a7 !important;letter-spacing:.15em !important}
+.student-v7.student-v7 .v7-head h2{font-size:31px !important;letter-spacing:-1.6px !important}
+.student-v7.student-v7 .v7-link{color:#63b3ff !important}
+
+.student-v7.student-v7 .v7-quick{gap:12px !important}
+.student-v7.student-v7 .v7-quick-card{
+  min-height:168px !important;padding:20px !important;border-radius:24px !important;
+  background:rgba(255,255,255,.045) !important;border:1px solid rgba(255,255,255,.085) !important;
+  box-shadow:0 16px 45px rgba(0,0,0,.10),inset 0 1px rgba(255,255,255,.06) !important;
+  backdrop-filter:blur(18px) saturate(135%) !important;transition:transform .2s ease,border-color .2s ease !important;
+}
+.student-v7.student-v7 .v7-quick-card:hover{transform:translateY(-5px) !important;border-color:rgba(255,255,255,.17) !important}
+.student-v7.student-v7 .v7-quick-card:before{opacity:.11 !important;filter:blur(5px)}
+.student-v7.student-v7 .v7-quick-icon{width:52px !important;height:52px !important;border-radius:17px !important;margin-bottom:29px !important}
+.student-v7.student-v7 .v7-quick-card b{font-size:15px !important}.student-v7.student-v7 .v7-quick-card span:not(.v7-arrow){font-size:10px !important;color:#8798ab !important}
+.student-v7.student-v7 .v7-arrow{color:#70bbff !important}
+
+.student-v7.student-v7 .v7-continue,.student-v7.student-v7 .v7-progress,.student-v7.student-v7 .v7-plan-row,.student-v7.student-v7 .v7-subject,.student-v7.student-v7 .v7-signal,.student-v7.student-v7 .v7-streak,.student-v7.student-v7 .v7-recovery{
+  background:rgba(255,255,255,.042) !important;border:1px solid rgba(255,255,255,.085) !important;
+  box-shadow:0 14px 45px rgba(0,0,0,.09),inset 0 1px rgba(255,255,255,.05) !important;
+  backdrop-filter:blur(18px) saturate(135%) !important;
+}
+.student-v7.student-v7 .v7-continue{background:linear-gradient(135deg,rgba(139,92,246,.14),rgba(10,132,255,.07),rgba(255,255,255,.035)) !important}
+.student-v7.student-v7 .v7-start{background:#0a84ff !important;color:#fff !important;box-shadow:0 8px 22px rgba(10,132,255,.22) !important}
+.student-v7.student-v7 .v7-progress-ring{background:conic-gradient(#34d399 var(--v7p),rgba(255,255,255,.08) 0) !important}
+.student-v7.student-v7 .v7-bigbar i{background:linear-gradient(90deg,#0a84ff,#8b5cf6,#22d3ee) !important}
+.student-v7.student-v7 .v7-plan-icon{background:linear-gradient(145deg,rgba(10,132,255,.18),rgba(139,92,246,.14)) !important;color:#72baff !important}
+.student-v7.student-v7 .v7-subject{position:relative;overflow:hidden !important}
+.student-v7.student-v7 .v7-subject:nth-child(1){box-shadow:inset 3px 0 #0a84ff,0 14px 45px rgba(0,0,0,.09) !important}
+.student-v7.student-v7 .v7-subject:nth-child(2){box-shadow:inset 3px 0 #34d399,0 14px 45px rgba(0,0,0,.09) !important}
+.student-v7.student-v7 .v7-subject:nth-child(3){box-shadow:inset 3px 0 #ff9f0a,0 14px 45px rgba(0,0,0,.09) !important}
+.student-v7.student-v7 .v7-track i{background:linear-gradient(90deg,#0a84ff,#22d3ee) !important}
+.student-v7.student-v7 .v7-signal{background:linear-gradient(135deg,rgba(139,92,246,.13),rgba(10,132,255,.05)) !important}
+.student-v7.student-v7 .v7-streak{background:linear-gradient(135deg,rgba(255,55,95,.12),rgba(255,159,10,.06)) !important}
+.student-v7.student-v7 .v7-recovery{background:linear-gradient(135deg,rgba(255,159,10,.11),rgba(255,55,95,.05)) !important}
+
+/* ========================= PUBLIC WEBSITE ========================= */
+.np-site.np-site{
+  --bg:#060912 !important;--surface:#101727 !important;--surface2:#151d30 !important;
+  --text:#f7f9ff !important;--muted:#a1adc0 !important;--line:rgba(255,255,255,.09) !important;
+  --gold:#ffd60a !important;--mint:#34d399 !important;--site-blue:#0a84ff !important;
+  background:
+    radial-gradient(850px 560px at 8% 4%,rgba(10,132,255,.14),transparent 70%),
+    radial-gradient(800px 540px at 92% 7%,rgba(139,92,246,.16),transparent 70%),
+    radial-gradient(900px 600px at 55% 55%,rgba(34,211,238,.07),transparent 72%),#060912 !important;
+}
+.np-site.np-site .np-nav{background:rgba(6,9,18,.64) !important;border-bottom:1px solid rgba(255,255,255,.08) !important;backdrop-filter:blur(28px) saturate(150%) !important}
+.np-site.np-site .np-logo{background:linear-gradient(145deg,#fff,#c7d2fe) !important;color:#101827 !important;box-shadow:0 8px 25px rgba(10,132,255,.2) !important}
+.np-site.np-site .np-brand b span{color:#7dd3fc !important}
+.np-site.np-site .np-navlinks{background:rgba(255,255,255,.035) !important;border-color:rgba(255,255,255,.08) !important}
+.np-site.np-site .np-navlinks button:hover{background:rgba(255,255,255,.08) !important}
+.np-site.np-site .np-open,.np-site.np-site .np-primary{background:linear-gradient(135deg,#0a84ff,#5b5ce2) !important;color:white !important;box-shadow:0 12px 28px rgba(10,132,255,.22) !important}
+.np-site.np-site .np-hero{padding:105px 0 92px !important}
+.np-site.np-site .np-eyebrow{border-color:rgba(34,211,238,.18) !important;background:rgba(34,211,238,.07) !important;color:#73e8f5 !important}
+.np-site.np-site .np-eyebrow i{background:#22d3ee !important;box-shadow:0 0 16px rgba(34,211,238,.75) !important}
+.np-site.np-site .np-hero h1{
+  font-size:clamp(53px,6.8vw,88px) !important;letter-spacing:-5.5px !important;
+  background:linear-gradient(105deg,#fff 0%,#dbeafe 33%,#9b8cff 63%,#55d9ff 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent !important;
+}
+.np-site.np-site .np-herotext{color:#a5b1c3 !important;font-size:15px !important}
+.np-site.np-site .np-secondary{background:rgba(255,255,255,.045) !important;border-color:rgba(255,255,255,.10) !important;backdrop-filter:blur(16px) !important}
+.np-site.np-site .np-trust b{color:#34d399 !important}
+.np-site.np-site .np-phone{
+  border-color:#1d2b3e !important;box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08) !important;
+}
+.np-site.np-site .np-screen{background:linear-gradient(180deg,#111a2b,#080d17) !important}
+.np-site.np-site .np-minin{background:#0a84ff !important;color:white !important}
+.np-site.np-site .np-pill{color:#70d9ff !important;background:rgba(34,211,238,.08) !important}
+.np-site.np-site .np-minihero{background:linear-gradient(135deg,#172d50,#1d1839) !important;border-color:rgba(99,179,255,.2) !important}
+.np-site.np-site .np-minibtn{background:#fff !important;color:#101827 !important}
+.np-site.np-site .np-minicard{background:rgba(255,255,255,.045) !important;border-color:rgba(255,255,255,.07) !important}
+.np-site.np-site .np-p{background:rgba(139,92,246,.2) !important;color:#b79cff !important}.np-site.np-site .np-b{background:rgba(10,132,255,.18) !important;color:#72baff !important}.np-site.np-site .np-o{background:rgba(255,159,10,.17) !important;color:#ffb83e !important}.np-site.np-site .np-g{background:rgba(52,211,153,.17) !important;color:#5ee7b0 !important}
+.np-site.np-site .np-sticker{background:rgba(16,23,39,.9) !important;border-color:rgba(255,255,255,.1) !important;backdrop-filter:blur(20px) !important}.np-site.np-site .np-sticker b{color:#70c7ff !important}
+.np-site.np-site .np-section{border-top-color:rgba(255,255,255,.06) !important}
+.np-site.np-site .np-sectionhead h2{font-size:clamp(34px,4vw,48px) !important;letter-spacing:-2.1px !important}
+.np-site.np-site .np-sectionhead p{color:#94a2b6 !important}
+.np-site.np-site .np-feature,.np-site.np-site .np-subject{
+  background:rgba(255,255,255,.045) !important;border-color:rgba(255,255,255,.09) !important;
+  box-shadow:0 18px 55px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.06) !important;
+  backdrop-filter:blur(18px) saturate(135%) !important;
+}
+.np-site.np-site .np-feature:hover,.np-site.np-site .np-subject:hover{transform:translateY(-4px) !important;border-color:rgba(255,255,255,.16) !important}
+.np-site.np-site .np-feature h3,.np-site.np-site .np-subject h3{letter-spacing:-.6px !important}
+.np-site.np-site .np-feature p{color:#8f9db0 !important}
+.np-site.np-site .np-ficon{box-shadow:inset 0 1px rgba(255,255,255,.08) !important}
+
+@media(max-width:850px){
+  .student-v7.student-v7 .v7-welcome{padding-top:45px !important}
+  .student-v7.student-v7 .v7-hero{padding:27px 22px !important;border-radius:26px !important}
+  .student-v7.student-v7 .v7-section{margin-top:43px !important}
+  .student-v7.student-v7 .v7-quick-card{min-height:128px !important;padding:15px !important}
+  .student-v7.student-v7 .v7-quick-icon{width:43px !important;height:43px !important;margin-bottom:19px !important}
+  .np-site.np-site .np-hero{padding:70px 0 55px !important}
+  .np-site.np-site .np-hero h1{letter-spacing:-3.5px !important}
+}
+@media(max-width:700px){
+  .student-v7.student-v7 .v7-welcome h1{font-size:39px !important;letter-spacing:-2.8px !important}
+  .student-v7.student-v7 .v7-welcome p{font-size:12px !important}
+  .student-v7.student-v7 .v7-hero{min-height:245px !important}
+  .student-v7.student-v7 .v7-quick-card{min-height:96px !important;border-radius:18px !important}
+  .student-v7.student-v7 .v7-quick-icon{width:37px !important;height:37px !important;border-radius:12px !important;margin-bottom:13px !important}
+  .np-site.np-site .np-wrap{width:min(100% - 32px,1160px) !important}
+  .np-site.np-site .np-hero h1{font-size:47px !important;letter-spacing:-3px !important}
+}
