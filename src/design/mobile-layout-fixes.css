@@ -1,0 +1,101 @@
+/* Final responsive guardrails. Visual effects stay intact. */
+
+/* Never allow a route shell or full-viewport effect to create horizontal scroll. */
+html, body, #root {
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+@media (max-width:700px) {
+  html, body {
+    overflow-x:clip !important;
+  }
+  body {
+    width:100% !important;
+    max-width:100vw !important;
+  }
+  #root {
+    width:100% !important;
+    max-width:100vw !important;
+    overflow-x:clip !important;
+  }
+
+  /* Student app: use the parent width, not 100vw + negative margins. */
+  .student-route .student-v7 {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+    overflow-x:clip !important;
+  }
+  .student-route .student-v7 .v7-top {
+    width:100% !important;
+    max-width:100% !important;
+    margin-left:0 !important;
+    box-sizing:border-box !important;
+  }
+  .student-route .student-v7 .v7-top,
+  .student-route .student-v7 .v7-brand,
+  .student-route .student-v7 .v7-actions {
+    min-width:0 !important;
+  }
+  .student-route .student-v7 .v7-brand {
+    flex:1 1 auto !important;
+    overflow:hidden !important;
+  }
+  .student-route .student-v7 .v7-brand-name {
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  .student-route .student-v7 .v7-actions {
+    flex:0 0 auto !important;
+  }
+
+  /* Keep the complete header on normal phones, but tighten it on very narrow
+     screens so all controls remain inside the viewport. */
+  .student-route .student-v7 .v7-top {
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+}
+
+@media (max-width:360px) {
+  .student-route .student-v7 .v7-top {
+    padding-left:8px !important;
+    padding-right:8px !important;
+  }
+  .student-route .student-v7 .v7-brand { gap:7px !important; }
+  .student-route .student-v7 .v7-logo,
+  .student-route .student-v7 .v7-round {
+    width:36px !important;
+    height:36px !important;
+  }
+  .student-route .student-v7 .v7-brand-name {
+    font-size:18px !important;
+    letter-spacing:-.8px !important;
+  }
+  .student-route .student-v7 .v7-actions { gap:5px !important; }
+}
+
+/* Absolute/fixed decorative layers cannot extend the document width. */
+@media (max-width:700px) {
+  .student-route .student-v7::before,
+  .student-route .student-v7::after,
+  .student-route .student-v7 .v7-hero::after,
+  .student-route .student-v7 .v7-quick-card::before,
+  .website-route .np-site::before,
+  .website-route .np-site::after {
+    max-width:100vw !important;
+  }
+
+  /* Public website has its own header. Remove only the student app chrome. */
+  html.website-route .v7-top,
+  html.website-route .student-v7 .v7-top,
+  html.website-route .student-route .v7-top,
+  html.website-route [class~="v7-top"] {
+    display:none !important;
+  }
+}
