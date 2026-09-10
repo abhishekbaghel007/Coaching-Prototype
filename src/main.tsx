@@ -14,6 +14,13 @@ const isWebsite = path === '/website' || path.startsWith('/website/');
 const isProgress = path === '/progress' || path.startsWith('/progress/');
 const isWebsiteProgress = path === '/website/progress';
 
+// Give CSS a reliable route-level hook so the student shell can never leak into
+// the public website, regardless of where a shared component is mounted.
+if (typeof document !== 'undefined') {
+  document.documentElement.classList.toggle('website-route', isWebsite || isWebsiteProgress);
+  document.documentElement.classList.toggle('student-route', !isWebsite && !isWebsiteProgress && !isAdmin);
+}
+
 function useProgressLauncher() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
