@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import type { ReactNode as ReactNodeType } from 'react';
 
 declare global {
   namespace React {
-    type ReactNode = ReactNode;
+    type ReactNode = ReactNodeType;
   }
 }
 
