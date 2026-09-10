@@ -7,6 +7,7 @@ import ProgressFinal from './progress/ProgressFinal';
 import './index.css';
 import './design/home-redesign.css';
 import './design/mobile-performance.css';
+import './design/mobile-layout-fixes.css';
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
 const isAdmin = path === '/admin' || path.startsWith('/admin/');
@@ -14,11 +15,14 @@ const isWebsite = path === '/website' || path.startsWith('/website/');
 const isProgress = path === '/progress' || path.startsWith('/progress/');
 const isWebsiteProgress = path === '/website/progress';
 
-// Give CSS a reliable route-level hook so the student shell can never leak into
-// the public website, regardless of where a shared component is mounted.
+// Give CSS reliable route-level hooks so shared UI can never leak between the
+// student app and the public website.
 if (typeof document !== 'undefined') {
-  document.documentElement.classList.toggle('website-route', isWebsite || isWebsiteProgress);
-  document.documentElement.classList.toggle('student-route', !isWebsite && !isWebsiteProgress && !isAdmin);
+  const websiteRoute = isWebsite || isWebsiteProgress;
+  document.documentElement.classList.toggle('website-route', websiteRoute);
+  document.documentElement.classList.toggle('student-route', !websiteRoute && !isAdmin);
+  document.body.classList.toggle('website-route', websiteRoute);
+  document.body.classList.toggle('student-route', !websiteRoute && !isAdmin);
 }
 
 function useProgressLauncher() {
