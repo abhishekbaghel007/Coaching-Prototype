@@ -6,6 +6,7 @@ import WebsiteHome from './website/WebsiteHome';
 import ProgressFinal from './progress/ProgressFinal';
 import './index.css';
 import './design/home-redesign.css';
+import './design/mobile-performance.css';
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
 const isAdmin = path === '/admin' || path.startsWith('/admin/');
