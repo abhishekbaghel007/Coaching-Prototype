@@ -15,8 +15,6 @@ const isWebsite = path === '/website' || path.startsWith('/website/');
 const isProgress = path === '/progress' || path.startsWith('/progress/');
 const isWebsiteProgress = path === '/website/progress';
 
-// Give CSS reliable route-level hooks so shared UI can never leak between the
-// student app and the public website.
 if (typeof document !== 'undefined') {
   const websiteRoute = isWebsite || isWebsiteProgress;
   document.documentElement.classList.toggle('website-route', websiteRoute);
