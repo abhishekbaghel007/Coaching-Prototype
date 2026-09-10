@@ -1,7 +1,6 @@
 /* Rich visual layer: keep the glass, colour and depth. */
 
-/* Student app top chrome. This is deliberately full-width so the header reads
-   as the app shell, while the home content below remains centered. */
+/* Student app top chrome. Full-width shell, centered content below. */
 .student-route .student-v7 .v7-top {
   position:sticky !important;
   top:0 !important;
@@ -18,52 +17,31 @@
   -webkit-backdrop-filter:blur(30px) saturate(175%) !important;
 }
 .student-route .student-v7 .v7-top::after {
-  content:"";
-  position:absolute;
-  inset:auto 0 0;
-  height:1px;
+  content:"";position:absolute;inset:auto 0 0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(10,132,255,.65),rgba(139,92,246,.5),rgba(34,211,238,.5),transparent);
   pointer-events:none;
 }
 .student-route .student-v7 .v7-brand { gap:11px !important; }
 .student-route .student-v7 .v7-logo {
-  width:43px !important;
-  height:43px !important;
-  border-radius:14px !important;
-  background:linear-gradient(145deg,#ffffff 0%,#dbeafe 48%,#bfdbfe 100%) !important;
+  width:43px !important;height:43px !important;border-radius:14px !important;
+  background:linear-gradient(145deg,#fff 0%,#dbeafe 48%,#bfdbfe 100%) !important;
   color:#111827 !important;
   box-shadow:0 8px 26px rgba(10,132,255,.24),inset 0 1px rgba(255,255,255,.95) !important;
 }
-.student-route .student-v7 .v7-brand-name {
-  font-size:22px !important;
-  letter-spacing:-1.1px !important;
-  text-shadow:0 2px 16px rgba(255,255,255,.08);
-}
+.student-route .student-v7 .v7-brand-name { font-size:22px !important;letter-spacing:-1.1px !important;text-shadow:0 2px 16px rgba(255,255,255,.08); }
 .student-route .student-v7 .v7-actions { gap:9px !important; }
 .student-route .student-v7 .v7-round {
-  width:44px !important;
-  height:44px !important;
-  border-radius:50% !important;
-  background:rgba(255,255,255,.065) !important;
-  border:1px solid rgba(255,255,255,.13) !important;
+  width:44px !important;height:44px !important;border-radius:50% !important;
+  background:rgba(255,255,255,.065) !important;border:1px solid rgba(255,255,255,.13) !important;
   color:#f5f7ff !important;
   box-shadow:inset 0 1px rgba(255,255,255,.10),0 8px 24px rgba(0,0,0,.13) !important;
-  backdrop-filter:blur(20px) saturate(165%) !important;
-  -webkit-backdrop-filter:blur(20px) saturate(165%) !important;
+  backdrop-filter:blur(20px) saturate(165%) !important;-webkit-backdrop-filter:blur(20px) saturate(165%) !important;
 }
-.student-route .student-v7 .v7-round:hover {
-  transform:translateY(-1px) scale(1.025) !important;
-  background:rgba(255,255,255,.11) !important;
-  border-color:rgba(255,255,255,.19) !important;
-}
+.student-route .student-v7 .v7-round:hover { transform:translateY(-1px) scale(1.025) !important;background:rgba(255,255,255,.11) !important;border-color:rgba(255,255,255,.19) !important; }
 
 @media (max-width:700px) {
-  .student-v7,
-  .student-v7 * { -webkit-tap-highlight-color:transparent; }
-
-  .student-v7::before,
-  .student-v7::after { display:block !important; }
-
+  .student-v7,.student-v7 * { -webkit-tap-highlight-color:transparent; }
+  .student-v7::before,.student-v7::after { display:block !important; }
   .student-v7 .v7-top,
   .student-v7 .v7-round,
   .student-v7 .v7-course,
@@ -81,70 +59,27 @@
     backdrop-filter:blur(24px) saturate(165%) !important;
     -webkit-backdrop-filter:blur(24px) saturate(165%) !important;
   }
-
-  .student-v7 .v7-top {
-    height:68px !important;
-    padding:9px 14px !important;
-    background:rgba(8,13,20,.64) !important;
-    box-shadow:0 10px 30px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.07) !important;
-  }
+  .student-v7 .v7-top { height:68px !important;padding:9px 14px !important;background:rgba(8,13,20,.64) !important;box-shadow:0 10px 30px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.07) !important; }
   .student-v7 .v7-logo { width:40px !important;height:40px !important;border-radius:13px !important; }
   .student-v7 .v7-brand-name { font-size:20px !important; }
   .student-v7 .v7-round { width:40px !important;height:40px !important; }
+  .student-v7 .v7-hero { box-shadow:0 20px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.10) !important; }
+  .student-v7 .v7-hero::after,.student-v7 .v7-quick-card::before { display:block !important; }
+  .student-v7 .v7-quick-card,.student-v7 .v7-plan-row,.student-v7 .v7-progress,.student-v7 .v7-continue,.student-v7 .v7-subject,.student-v7 .v7-signal,.student-v7 .v7-streak,.student-v7 .v7-recovery { box-shadow:0 12px 32px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.055) !important; }
+  .student-v7 .v7-quick-card,.student-v7 .v7-round,.student-v7 .v7-plan-row,.student-v7 .v7-menu-card { transition:transform .18s ease,border-color .18s ease,background .18s ease !important; }
 
-  .student-v7 .v7-hero {
-    box-shadow:0 20px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.10) !important;
-  }
-  .student-v7 .v7-hero::after,
-  .student-v7 .v7-quick-card::before { display:block !important; }
-
-  .student-v7 .v7-quick-card,
-  .student-v7 .v7-plan-row,
-  .student-v7 .v7-progress,
-  .student-v7 .v7-continue,
-  .student-v7 .v7-subject,
-  .student-v7 .v7-signal,
-  .student-v7 .v7-streak,
-  .student-v7 .v7-recovery {
-    box-shadow:0 12px 32px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.055) !important;
-  }
-
-  .student-v7 .v7-quick-card,
-  .student-v7 .v7-round,
-  .student-v7 .v7-plan-row,
-  .student-v7 .v7-menu-card { transition:transform .18s ease,border-color .18s ease,background .18s ease !important; }
-
-  .pf .pf-nav,
-  .pf .pf-card {
-    backdrop-filter:blur(22px) saturate(155%) !important;
-    -webkit-backdrop-filter:blur(22px) saturate(155%) !important;
-  }
-  .pf .pf-nav { background:rgba(10,14,18,.72) !important; border-color:rgba(255,255,255,.10) !important; }
+  .pf .pf-nav,.pf .pf-card { backdrop-filter:blur(22px) saturate(155%) !important;-webkit-backdrop-filter:blur(22px) saturate(155%) !important; }
+  .pf .pf-nav { background:rgba(10,14,18,.72) !important;border-color:rgba(255,255,255,.10) !important; }
   .pf .pf-card { box-shadow:0 12px 32px rgba(0,0,0,.12) !important; }
   .pf .pf-hero .pf-card { box-shadow:0 16px 40px rgba(0,0,0,.16) !important; }
 
-  .np-site .np-nav,
-  .np-site .np-floating-theme,
-  .np-site .np-feature,
-  .np-site .np-subject,
-  .np-site .np-jcard,
-  .np-site .np-step,
-  .np-site .np-tool,
-  .np-site .site-appearance {
-    backdrop-filter:blur(26px) saturate(165%) !important;
-    -webkit-backdrop-filter:blur(26px) saturate(165%) !important;
-  }
+  .np-site .np-nav,.np-site .np-floating-theme,.np-site .np-feature,.np-site .np-subject,.np-site .np-jcard,.np-site .np-step,.np-site .np-tool,.np-site .site-appearance { backdrop-filter:blur(26px) saturate(165%) !important;-webkit-backdrop-filter:blur(26px) saturate(165%) !important; }
   .np-site .np-nav { background:rgba(6,9,18,.64) !important;border-bottom-color:rgba(255,255,255,.10) !important; }
   .np-site .np-floating-theme { background:rgba(28,28,30,.74) !important;box-shadow:0 12px 30px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.07) !important; }
-  .np-site .np-feature,
-  .np-site .np-subject,
-  .np-site .np-jcard { box-shadow:0 12px 32px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.045) !important; }
+  .np-site .np-feature,.np-site .np-subject,.np-site .np-jcard { box-shadow:0 12px 32px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.045) !important; }
   .np-site .np-feature:hover { transform:translateY(-2px) !important; }
 }
 
-/* The public site owns its own navigation. Hide the student home chrome at
-   the route level as well as inside .np-site, covering shared-component cases. */
+/* Public website owns its own navigation. Never show the student home header there. */
 .website-route .v7-top,
-.website-route .student-v7,
-.website-route .student-v7 > .v7-top,
 .np-site .v7-top { display:none !important; }
