@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { getStaffRole } from './admin/admin';
-import AdminPanel from './admin/AdminPanel';
+import TeacherCommandCenter from './admin/TeacherCommandCenter';
 
 const adminCss = `
 .admin-auth-shell{min-height:100vh;background:#07090b;color:#f4f7f8;display:grid;place-items:center;padding:28px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;position:relative;overflow:hidden}
@@ -99,7 +99,7 @@ export default function AdminApp() {
   }
 
   if (user) {
-    return <AdminPanel user={user} onExit={exitToStudentApp} />;
+    return <TeacherCommandCenter user={user} onExit={exitToStudentApp} />;
   }
 
   return (
@@ -124,55 +124,19 @@ export default function AdminApp() {
           <form className="admin-auth-form" onSubmit={signIn}>
             <div className="admin-auth-field">
               <label htmlFor="teacher-email">Email</label>
-              <input
-                id="teacher-email"
-                className="admin-auth-input"
-                type="email"
-                autoComplete="username"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="teacher@yourcoaching.com"
-                required
-              />
+              <input id="teacher-email" className="admin-auth-input" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="teacher@yourcoaching.com" required />
             </div>
-
             <div className="admin-auth-field">
               <label htmlFor="teacher-password">Password</label>
               <div className="admin-auth-input-wrap">
-                <input
-                  id="teacher-password"
-                  className="admin-auth-input has-toggle"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  className="admin-auth-toggle"
-                  type="button"
-                  onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
+                <input id="teacher-password" className="admin-auth-input has-toggle" type={showPassword ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" required />
+                <button className="admin-auth-toggle" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? 'Hide' : 'Show'}</button>
               </div>
             </div>
-
             {error && <div className="admin-auth-error" role="alert">{error}</div>}
-
-            <button className="admin-auth-submit" type="submit" disabled={submitting}>
-              {submitting ? 'Signing in…' : 'Sign in to Teacher Console  ↗'}
-            </button>
+            <button className="admin-auth-submit" type="submit" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in to Teacher Console  ↗'}</button>
           </form>
-
-          <div className="admin-auth-footer">
-            <button className="admin-auth-back" type="button" onClick={() => { window.location.href = '/'; }}>
-              ← Student app
-            </button>
-            <span className="admin-auth-security">Role-protected · Supabase Auth</span>
-          </div>
+          <div className="admin-auth-footer"><button className="admin-auth-back" type="button" onClick={() => { window.location.href = '/'; }}>← Student app</button><span className="admin-auth-security">Role-protected · Supabase Auth</span></div>
         </section>
       </main>
     </>
