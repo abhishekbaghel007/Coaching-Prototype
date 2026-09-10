@@ -1,0 +1,92 @@
+/* Mobile performance layer: preserve the visual language, remove low-value GPU work. */
+@media (max-width: 700px) {
+  /* Student Home */
+  .student-v7::before,
+  .student-v7::after { display:none !important; }
+
+  .student-v7,
+  .student-v7 * { -webkit-tap-highlight-color:transparent; }
+
+  .student-v7 .v7-top,
+  .student-v7 .v7-round,
+  .student-v7 .v7-course,
+  .student-v7 .v7-quick-card,
+  .student-v7 .v7-continue,
+  .student-v7 .v7-progress,
+  .student-v7 .v7-plan-row,
+  .student-v7 .v7-subject,
+  .student-v7 .v7-signal,
+  .student-v7 .v7-streak,
+  .student-v7 .v7-recovery,
+  .student-v7 .v7-menu-card {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+
+  .student-v7 .v7-top {
+    background:rgba(7,11,17,.96) !important;
+    box-shadow:0 1px 0 rgba(255,255,255,.06) !important;
+  }
+
+  .student-v7 .v7-hero { box-shadow:0 14px 34px rgba(0,0,0,.16) !important; }
+  .student-v7 .v7-hero::after,
+  .student-v7 .v7-quick-card::before { display:none !important; }
+
+  .student-v7 .v7-quick-card,
+  .student-v7 .v7-plan-row,
+  .student-v7 .v7-progress,
+  .student-v7 .v7-continue,
+  .student-v7 .v7-subject,
+  .student-v7 .v7-signal,
+  .student-v7 .v7-streak,
+  .student-v7 .v7-recovery {
+    box-shadow:0 7px 22px rgba(0,0,0,.08) !important;
+  }
+
+  .student-v7 .v7-quick-card,
+  .student-v7 .v7-round,
+  .student-v7 .v7-plan-row,
+  .student-v7 .v7-menu-card { transition:none !important; }
+
+  .student-v7 .v7-explore,
+  .student-v7 .v7-prep-sheet {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+
+  /* Progress */
+  .pf .pf-nav,
+  .pf .pf-card {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  .pf .pf-nav { background:rgba(10,14,18,.97) !important; }
+  .pf .pf-card { box-shadow:0 8px 24px rgba(0,0,0,.10) !important; }
+  .pf .pf-hero .pf-card { box-shadow:0 10px 28px rgba(0,0,0,.12) !important; }
+
+  /* Public website: keep the design, but make mobile compositing cheap. */
+  .np-site .np-nav,
+  .np-site .np-floating-theme,
+  .np-site .np-feature,
+  .np-site .np-subject,
+  .np-site .np-jcard,
+  .np-site .np-step,
+  .np-site .np-tool,
+  .np-site .site-appearance {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  .np-site .np-nav { background:rgba(5,5,6,.96) !important; }
+  .np-site .np-floating-theme {
+    background:rgba(28,28,30,.96) !important;
+    box-shadow:0 6px 18px rgba(0,0,0,.10) !important;
+  }
+  .np-site .np-feature,
+  .np-site .np-subject,
+  .np-site .np-jcard { box-shadow:0 8px 24px rgba(0,0,0,.08) !important; }
+  .np-site .np-feature:hover { transform:none !important; }
+}
+
+/* The public website already has its own navigation. Never show the student
+   app's home header if a shared/mobile shell is ever mounted inside it. */
+.np-site .v7-top { display:none !important; }
