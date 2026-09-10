@@ -1,0 +1,196 @@
+/* Final product polish: route isolation, viewport safety, responsive rhythm, and calmer glass surfaces. */
+
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { overflow-x: hidden; }
+body { margin: 0; overflow-x: hidden; }
+
+/* A public website must never inherit a student shell/header, even if a shared
+   component is accidentally mounted by a parent route. */
+html.website-route .student-v7,
+body:has(.np-site) .student-v7 {
+  display: none !important;
+}
+
+html.website-route .v7-top,
+body:has(.np-site) .v7-top {
+  display: none !important;
+}
+
+/* Keep decorative full-bleed layers from creating horizontal scroll. */
+.student-v7,
+.np-site {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+/* Student home: constrain every grid/flex child so long labels cannot widen
+   the viewport on small phones. */
+.student-v7 .v7-top,
+.student-v7 .v7-welcome,
+.student-v7 .v7-course,
+.student-v7 .v7-hero,
+.student-v7 .v7-section,
+.student-v7 .v7-quick,
+.student-v7 .v7-continue,
+.student-v7 .v7-progress,
+.student-v7 .v7-plan-row,
+.student-v7 .v7-subject,
+.student-v7 .v7-signal,
+.student-v7 .v7-streak,
+.student-v7 .v7-recovery,
+.student-v7 .v7-explore,
+.student-v7 .v7-menu-card { min-width: 0; }
+
+.student-v7 img,
+.np-site img,
+.student-v7 svg,
+.np-site svg { max-width: 100%; }
+
+@media (max-width: 700px) {
+  .student-v7 {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-bottom: 92px !important;
+  }
+
+  .student-v7 .v7-top {
+    width: calc(100% + 28px) !important;
+    margin-left: -14px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .student-v7 .v7-brand,
+  .student-v7 .v7-actions,
+  .student-v7 .v7-head,
+  .student-v7 .v7-plan-row,
+  .student-v7 .v7-continue,
+  .student-v7 .v7-hero {
+    min-width: 0 !important;
+  }
+
+  .student-v7 .v7-brand-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .student-v7 .v7-hero {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 25px 20px !important;
+    border-radius: 25px !important;
+  }
+
+  .student-v7 .v7-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+
+  .student-v7 .v7-quick-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 142px !important;
+    padding: 17px !important;
+  }
+
+  .student-v7 .v7-section { margin-top: 42px !important; }
+  .student-v7 .v7-welcome { padding-top: 36px !important; }
+  .student-v7 .v7-welcome h1 { font-size: clamp(38px, 12vw, 54px) !important; letter-spacing: -3px !important; }
+
+  .student-v7 .v7-plan-row,
+  .student-v7 .v7-continue,
+  .student-v7 .v7-progress,
+  .student-v7 .v7-subject,
+  .student-v7 .v7-signal,
+  .student-v7 .v7-streak,
+  .student-v7 .v7-recovery {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Never let a chart/ring become wider than its card. */
+  .student-v7 .v7-ring,
+  .student-v7 .v7-progress-ring,
+  .student-v7 .v7-bigbar,
+  .student-v7 .v7-track { max-width: 100%; }
+
+  .np-site {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: clip !important;
+  }
+
+  .np-site .np-wrap {
+    width: min(100% - 28px, 1180px) !important;
+    max-width: 100% !important;
+  }
+
+  .np-site .np-navin {
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .np-site .np-brand { min-width: 0; }
+  .np-site .np-brand b { white-space: nowrap; }
+  .np-site .np-navlinks,
+  .np-site .np-login { display: none !important; }
+
+  .np-site .np-mobile { display: grid !important; place-items: center; }
+  .np-site .np-navactions { min-width: 0; }
+
+  .np-site .np-hero { padding: 58px 0 42px !important; }
+  .np-site .np-herogrid { grid-template-columns: minmax(0, 1fr) !important; gap: 24px !important; }
+  .np-site .np-hero h1 { font-size: clamp(44px, 13vw, 64px) !important; letter-spacing: -3.8px !important; }
+  .np-site .np-herotext { max-width: 100%; }
+  .np-site .np-actions { flex-wrap: wrap; }
+  .np-site .np-primary,
+  .np-site .np-secondary { min-height: 46px; }
+
+  .np-site .np-art { height: 430px !important; width: 100%; overflow: visible; }
+  .np-site .np-phone { width: min(258px, 72vw) !important; height: min(470px, 132vw) !important; right: 50% !important; transform: translateX(50%) rotate(1deg) !important; }
+  .np-site .np-sticker { left: 2px !important; bottom: 3px !important; width: 160px !important; }
+
+  .np-site .np-section { padding: 62px 0 !important; }
+  .np-site .np-sectionhead { display: block !important; }
+  .np-site .np-sectionhead p { margin-top: 13px !important; max-width: 100% !important; }
+  .np-site .np-sectionhead h2 { font-size: clamp(31px, 9vw, 40px) !important; }
+  .np-site .np-features,
+  .np-site .np-subjects { grid-template-columns: 1fr !important; }
+  .np-site .np-feature,
+  .np-site .np-subject { min-height: 0 !important; }
+  .np-site .np-journey { grid-template-columns: 1fr !important; }
+  .np-site .np-jcard { min-width: 0 !important; }
+  .np-site .np-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .np-site .np-cta { padding: 30px 20px !important; }
+  .np-site .np-cta h2 { font-size: clamp(30px, 9vw, 42px) !important; }
+}
+
+@media (max-width: 380px) {
+  .student-v7 { padding-left: 11px !important; padding-right: 11px !important; }
+  .student-v7 .v7-top { width: calc(100% + 22px) !important; margin-left: -11px !important; padding-left: 11px !important; padding-right: 11px !important; }
+  .student-v7 .v7-round { width: 37px !important; height: 37px !important; }
+  .student-v7 .v7-logo { width: 37px !important; height: 37px !important; }
+  .student-v7 .v7-brand { gap: 8px !important; }
+  .student-v7 .v7-actions { gap: 6px !important; }
+  .np-site .np-wrap { width: calc(100% - 22px) !important; }
+  .np-site .np-hero h1 { font-size: 42px !important; letter-spacing: -3px !important; }
+  .np-site .np-actions { display: grid !important; grid-template-columns: 1fr !important; }
+  .np-site .np-primary, .np-site .np-secondary { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
