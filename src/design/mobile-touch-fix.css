@@ -1,0 +1,46 @@
+/* MOBILE TOUCH FIX
+   Keep vertical gestures owned by the browser's document scroller.
+   Decorative layers must never become a touch target. */
+html,
+body,
+#root {
+  touch-action: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overflow-y: auto !important;
+}
+
+.app,
+.student-v7,
+.np-site {
+  touch-action: auto !important;
+  overflow-y: visible !important;
+  overscroll-behavior-y: auto !important;
+}
+
+/* Decorative pseudo-elements cannot intercept a finger gesture. */
+.student-v7::before,
+.student-v7::after,
+.student-v7 .v7-top::after,
+.np-site::before,
+.np-site::after,
+.np-site *::before,
+.np-site *::after {
+  pointer-events: none !important;
+}
+
+/* Fixed UI is interactive only when it is actually a control. */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root,
+  .app,
+  .student-v7,
+  .np-site {
+    touch-action: auto !important;
+  }
+
+  .student-v7 .v7-top,
+  .np-site .np-nav {
+    touch-action: auto !important;
+  }
+}
