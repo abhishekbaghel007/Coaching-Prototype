@@ -99,3 +99,6 @@ html, body, #root {
     display:none !important;
   }
 }
+
+/* Scroll ownership (html/body/#root/.app/.np-site) is now set once,
+   globally, in index.css — do not redeclare it here. */

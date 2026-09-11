@@ -3,7 +3,11 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
 
 :root{font-family:'DM Sans',system-ui,sans-serif;color:var(--np-text);background:var(--np-bg);font-synthesis:none;text-rendering:optimizeLegibility;--accent:var(--np-primary)}
-*{box-sizing:border-box}html,body,#root{margin:0;min-height:100%;background:var(--np-bg)}body{overflow-x:hidden}button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}a{text-decoration:none;color:inherit}
+*{box-sizing:border-box}
+html,body,#root{margin:0;width:100%;min-height:100%;background:var(--np-bg);overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:auto}
+html,body{min-height:100dvh}
+.app,.student-v7,.np-site{overflow-y:visible;touch-action:auto}
+button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}a{text-decoration:none;color:inherit}
 .app{min-height:100vh;background:
  radial-gradient(900px 420px at 50% -180px, color-mix(in srgb,var(--accent) 11%,transparent), transparent 70%),
  radial-gradient(700px 360px at 0% 42%, rgba(86,126,255,.035), transparent 72%),
