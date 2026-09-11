@@ -8,32 +8,51 @@
   <title>neetprep · NEET Study Platform</title>
   <script>
     (function () {
-      // Capture wheel events before StudentShell's legacy wheel handler.
-      // The browser should own page scrolling on the student home.
-      document.addEventListener('wheel', function (event) {
-        var target = event.target;
-        if (!target || !target.closest || !target.closest('.student-v7')) return;
-        if (event.ctrlKey) return;
-        if (target.closest('.v7-explore, .v7-sheet-backdrop, [role="dialog"], input, textarea, select')) return;
-        event.stopImmediatePropagation();
-      }, { capture: true, passive: true });
+      // Keep the browser viewport as the single vertical scroll owner.
+      // StudentShell/WebsiteScrollShell previously turned body, #root and
+      // route shells into nested scroll containers, which can trap touch scroll
+      // on mobile while still appearing to work with a desktop mouse wheel.
+      function normalizeScroll() {
+        var html = document.documentElement;
+        var body = document.body;
+        var root = document.getElementById('root');
+        var app = document.querySelector('.app');
+        var site = document.querySelector('.np-site');
+        var student = document.querySelector('.student-v7');
 
-      // StudentShell currently hides the inner mobile header with an inline
-      // !important style. Restore it after React mounts and if it changes.
-      function restoreHeader() {
-        document.querySelectorAll('.student-v7 .v7-top').forEach(function (header) {
-          header.style.setProperty('display', 'flex', 'important');
-          header.style.setProperty('visibility', 'visible', 'important');
-          header.style.setProperty('opacity', '1', 'important');
+        html.style.setProperty('height', 'auto', 'important');
+        html.style.setProperty('min-height', '100%', 'important');
+        html.style.setProperty('overflow-y', 'auto', 'important');
+        html.style.setProperty('overflow-x', 'hidden', 'important');
+        html.style.setProperty('touch-action', 'pan-y', 'important');
+
+        [body, root, app, site, student].forEach(function (el) {
+          if (!el) return;
+          el.style.setProperty('height', 'auto', 'important');
+          el.style.setProperty('max-height', 'none', 'important');
+          el.style.setProperty('overflow-y', 'visible', 'important');
+          el.style.setProperty('overflow-x', 'hidden', 'important');
+          el.style.setProperty('touch-action', 'pan-y', 'important');
         });
+
+        if (student) {
+          student.style.setProperty('display', 'block', 'important');
+          var header = student.querySelector('.v7-top');
+          if (header) {
+            header.style.setProperty('display', 'flex', 'important');
+            header.style.setProperty('visibility', 'visible', 'important');
+            header.style.setProperty('opacity', '1', 'important');
+          }
+        }
       }
-      new MutationObserver(restoreHeader).observe(document.documentElement, {
+
+      // Run after React mounts and keep it stable against route/state changes.
+      normalizeScroll();
+      new MutationObserver(normalizeScroll).observe(document.documentElement, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'class']
+        subtree: true
       });
-      restoreHeader();
+      setInterval(normalizeScroll, 250);
     })();
   </script>
   <link rel="stylesheet" href="/src/mobile-layout-fix.css" />
