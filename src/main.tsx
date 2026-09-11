@@ -98,6 +98,65 @@ function WebsiteScrollShell() {
 }
 
 function StudentShell() {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+    const app = document.querySelector<HTMLElement>('.app');
+    const homeHeader = document.querySelector<HTMLElement>('.student-v7 .v7-top');
+    const elements = [html, body, root, app].filter(Boolean) as HTMLElement[];
+    const previous = elements.map(el => ({
+      el,
+      overflowY: el.style.overflowY,
+      overflowX: el.style.overflowX,
+      height: el.style.height,
+      minHeight: el.style.minHeight,
+      maxHeight: el.style.maxHeight,
+      position: el.style.position,
+    }));
+    const previousHeader = homeHeader ? {
+      position: homeHeader.style.position,
+      top: homeHeader.style.top,
+      zIndex: homeHeader.style.zIndex,
+    } : null;
+
+    for (const el of elements) {
+      el.style.setProperty('overflow-y', 'auto', 'important');
+      el.style.setProperty('overflow-x', 'hidden', 'important');
+      el.style.setProperty('height', 'auto', 'important');
+      el.style.setProperty('min-height', '100%', 'important');
+      el.style.setProperty('max-height', 'none', 'important');
+    }
+    if (root) root.style.setProperty('position', 'static', 'important');
+    if (body) body.style.setProperty('position', 'static', 'important');
+    if (app) {
+      app.style.setProperty('overflow', 'visible', 'important');
+      app.style.setProperty('height', 'auto', 'important');
+      app.style.setProperty('max-height', 'none', 'important');
+    }
+    if (homeHeader) {
+      homeHeader.style.setProperty('position', 'relative', 'important');
+      homeHeader.style.setProperty('top', 'auto', 'important');
+      homeHeader.style.setProperty('z-index', '2', 'important');
+    }
+
+    return () => {
+      for (const item of previous) {
+        item.el.style.overflowY = item.overflowY;
+        item.el.style.overflowX = item.overflowX;
+        item.el.style.height = item.height;
+        item.el.style.minHeight = item.minHeight;
+        item.el.style.maxHeight = item.maxHeight;
+        item.el.style.position = item.position;
+      }
+      if (homeHeader && previousHeader) {
+        homeHeader.style.position = previousHeader.position;
+        homeHeader.style.top = previousHeader.top;
+        homeHeader.style.zIndex = previousHeader.zIndex;
+      }
+    };
+  }, []);
+
   const [open, setOpen] = useProgressLauncher();
   return <><App />{open && <ProgressFinal onClose={() => setOpen(false)} />}</>;
 }
