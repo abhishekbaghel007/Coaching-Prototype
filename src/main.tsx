@@ -118,6 +118,7 @@ function StudentShell() {
       position: homeHeader.style.position,
       top: homeHeader.style.top,
       zIndex: homeHeader.style.zIndex,
+      display: homeHeader.style.display,
     } : null;
 
     for (const el of elements) {
@@ -134,13 +135,38 @@ function StudentShell() {
       app.style.setProperty('height', 'auto', 'important');
       app.style.setProperty('max-height', 'none', 'important');
     }
+
+    // The global navigation in App is the only navigation bar needed on the
+    // student home. The inner v7 header duplicated it and was the blank box
+    // visible below the navbar, so remove that duplicate surface entirely.
     if (homeHeader) {
-      homeHeader.style.setProperty('position', 'relative', 'important');
-      homeHeader.style.setProperty('top', 'auto', 'important');
-      homeHeader.style.setProperty('z-index', '2', 'important');
+      homeHeader.style.setProperty('display', 'none', 'important');
     }
 
+    // Chromium/Electron can keep wheel/touchpad scrolling attached to a nested
+    // overflow surface even after CSS has been normalized. For the main student
+    // page, route wheel deltas directly to the document viewport. Internal
+    // Study Centre/modal surfaces retain their own native scrolling.
+    const onWheel = (event: WheelEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('.student-v7')) return;
+      if (target.closest('.v7-explore, .v7-sheet-backdrop, [role="dialog"]')) return;
+      if (event.ctrlKey) return;
+
+      const delta = event.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? event.deltaY * 16
+        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? event.deltaY * window.innerHeight
+          : event.deltaY;
+      if (!Number.isFinite(delta) || delta === 0) return;
+
+      event.preventDefault();
+      window.scrollBy(0, delta);
+    };
+    document.addEventListener('wheel', onWheel, { capture: true, passive: false });
+
     return () => {
+      document.removeEventListener('wheel', onWheel, true);
       for (const item of previous) {
         item.el.style.overflowY = item.overflowY;
         item.el.style.overflowX = item.overflowX;
@@ -153,6 +179,7 @@ function StudentShell() {
         homeHeader.style.position = previousHeader.position;
         homeHeader.style.top = previousHeader.top;
         homeHeader.style.zIndex = previousHeader.zIndex;
+        homeHeader.style.display = previousHeader.display;
       }
     };
   }, []);
