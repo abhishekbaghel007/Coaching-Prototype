@@ -8,9 +8,6 @@ html, body, #root {
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { overflow-x: hidden; }
-body { margin: 0; overflow-x: hidden; }
-
 /* A public website must never inherit a student shell/header, even if a shared
    component is accidentally mounted by a parent route. */
 html.website-route .student-v7,
@@ -21,15 +18,6 @@ body:has(.np-site) .student-v7 {
 html.website-route .v7-top,
 body:has(.np-site) .v7-top {
   display: none !important;
-}
-
-/* Keep decorative full-bleed layers from creating horizontal scroll. */
-.student-v7,
-.np-site {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: clip;
 }
 
 /* Student home: constrain every grid/flex child so long labels cannot widen
@@ -130,7 +118,6 @@ body:has(.np-site) .v7-top {
   .np-site {
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: clip !important;
   }
 
   .np-site .np-wrap {
