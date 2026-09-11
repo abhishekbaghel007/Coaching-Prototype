@@ -44,6 +44,59 @@ function useProgressLauncher() {
   return [open, setOpen] as const;
 }
 
+function WebsiteScrollShell() {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+    const elements = [html, body, root].filter(Boolean) as HTMLElement[];
+    const previous = elements.map(el => ({
+      el,
+      overflowY: el.style.overflowY,
+      overflowX: el.style.overflowX,
+      height: el.style.height,
+      minHeight: el.style.minHeight,
+      maxHeight: el.style.maxHeight,
+      position: el.style.position,
+      touchAction: el.style.touchAction,
+    }));
+
+    for (const el of elements) {
+      el.style.setProperty('overflow-y', 'auto', 'important');
+      el.style.setProperty('overflow-x', 'hidden', 'important');
+      el.style.setProperty('height', 'auto', 'important');
+      el.style.setProperty('min-height', '100%', 'important');
+      el.style.setProperty('max-height', 'none', 'important');
+      el.style.setProperty('position', 'relative', 'important');
+      el.style.setProperty('touch-action', 'pan-y', 'important');
+    }
+
+    const site = document.querySelector<HTMLElement>('.np-site');
+    if (site) {
+      site.style.setProperty('height', 'auto', 'important');
+      site.style.setProperty('min-height', '100vh', 'important');
+      site.style.setProperty('max-height', 'none', 'important');
+      site.style.setProperty('overflow', 'visible', 'important');
+      site.style.setProperty('overflow-y', 'visible', 'important');
+      site.style.setProperty('touch-action', 'pan-y', 'important');
+    }
+
+    return () => {
+      for (const item of previous) {
+        item.el.style.overflowY = item.overflowY;
+        item.el.style.overflowX = item.overflowX;
+        item.el.style.height = item.height;
+        item.el.style.minHeight = item.minHeight;
+        item.el.style.maxHeight = item.maxHeight;
+        item.el.style.position = item.position;
+        item.el.style.touchAction = item.touchAction;
+      }
+    };
+  }, []);
+
+  return <WebsiteShell />;
+}
+
 function StudentShell() {
   const [open, setOpen] = useProgressLauncher();
   return <><App />{open && <ProgressFinal onClose={() => setOpen(false)} />}</>;
@@ -65,7 +118,7 @@ const Root = isAdmin
     : isProgress
       ? ProgressRoute
       : isWebsite
-        ? WebsiteShell
+        ? WebsiteScrollShell
         : StudentShell;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
