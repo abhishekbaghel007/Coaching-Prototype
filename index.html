@@ -1,1 +1,45 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#080b0e"/><meta name="color-scheme" content="dark light"/><title>neetprep · NEET Study Platform</title><link rel="stylesheet" href="/src/mobile-layout-fix.css"/></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="theme-color" content="#080b0e" />
+  <meta name="color-scheme" content="dark light" />
+  <title>neetprep · NEET Study Platform</title>
+  <script>
+    (function () {
+      // Capture wheel events before StudentShell's legacy wheel handler.
+      // The browser should own page scrolling on the student home.
+      document.addEventListener('wheel', function (event) {
+        var target = event.target;
+        if (!target || !target.closest || !target.closest('.student-v7')) return;
+        if (event.ctrlKey) return;
+        if (target.closest('.v7-explore, .v7-sheet-backdrop, [role="dialog"], input, textarea, select')) return;
+        event.stopImmediatePropagation();
+      }, { capture: true, passive: true });
+
+      // StudentShell currently hides the inner mobile header with an inline
+      // !important style. Restore it after React mounts and if it changes.
+      function restoreHeader() {
+        document.querySelectorAll('.student-v7 .v7-top').forEach(function (header) {
+          header.style.setProperty('display', 'flex', 'important');
+          header.style.setProperty('visibility', 'visible', 'important');
+          header.style.setProperty('opacity', '1', 'important');
+        });
+      }
+      new MutationObserver(restoreHeader).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+      restoreHeader();
+    })();
+  </script>
+  <link rel="stylesheet" href="/src/mobile-layout-fix.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
