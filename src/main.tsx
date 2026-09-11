@@ -9,6 +9,7 @@ import './design/home-redesign.css';
 import './design/mobile-performance.css';
 import './design/mobile-layout-fixes.css';
 import './design/global-polish.css';
+import './design/mobile-touch-fix.css';
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
 const isAdmin = path === '/admin' || path.startsWith('/admin/');
