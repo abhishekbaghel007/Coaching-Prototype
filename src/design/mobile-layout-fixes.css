@@ -1,3 +1,5 @@
+@import '../mobile-layout-fix.css';
+
 /* Final responsive guardrails. Visual effects stay intact. */
 
 /* Never allow a route shell or full-viewport effect to create horizontal scroll. */
