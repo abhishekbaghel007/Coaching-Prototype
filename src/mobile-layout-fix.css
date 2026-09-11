@@ -1,0 +1,56 @@
+/* Mobile layout fix: restore normal document scrolling and keep the student header visible. */
+html,
+body,
+#root {
+  min-height: 100%;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body {
+  min-height: 100dvh !important;
+  overflow-y: auto !important;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app {
+  min-height: 100dvh !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 760px) {
+  .top-nav {
+    display: none !important;
+  }
+
+  /* The StudentExperience header is the mobile header. Keep it rendered and sticky. */
+  .student-v7 {
+    display: block !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+    touch-action: pan-y;
+  }
+
+  .student-v7 .v7-top {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 200 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  html,
+  body,
+  #root,
+  .app,
+  .student-v7 {
+    overflow-y: auto !important;
+  }
+}
