@@ -1,56 +1,84 @@
-/* Mobile layout fix: restore normal document scrolling and keep the student header visible. */
-html,
+/* Mobile scroll architecture: the document is the only vertical scroll owner. */
+html {
+  width:100%;
+  min-height:100%;
+  height:auto !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  touch-action:pan-y !important;
+  -webkit-overflow-scrolling:touch;
+}
+
 body,
-#root {
-  min-height: 100%;
-  height: auto !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+#root,
+.app,
+.np-site,
+.student-v7 {
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  height:auto !important;
+  max-height:none !important;
+  overflow-y:visible !important;
+  overflow-x:hidden !important;
+  touch-action:pan-y !important;
 }
 
 body {
-  min-height: 100dvh !important;
-  overflow-y: auto !important;
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
+  min-height:100dvh !important;
+  margin:0;
 }
 
-.app {
-  min-height: 100dvh !important;
-  height: auto !important;
-  overflow: visible !important;
+.app,
+.np-site,
+.student-v7 {
+  min-height:100dvh !important;
 }
 
-@media (max-width: 760px) {
-  .top-nav {
-    display: none !important;
-  }
+@media (max-width:760px) {
+  /* Hide the desktop student navigation, not the actual mobile header. */
+  .top-nav { display:none !important; }
 
-  /* The StudentExperience header is the mobile header. Keep it rendered and sticky. */
   .student-v7 {
-    display: block !important;
-    min-height: 100dvh !important;
-    height: auto !important;
-    overflow: visible !important;
-    touch-action: pan-y;
+    display:block !important;
+    overflow:visible !important;
+    padding-bottom:110px !important;
   }
 
   .student-v7 .v7-top {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 200 !important;
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    position:sticky !important;
+    top:0 !important;
+    z-index:200 !important;
+    pointer-events:auto !important;
+  }
+
+  /* The public website must also remain a normal document flow. */
+  .np-site {
+    display:block !important;
+    overflow:visible !important;
+  }
+
+  .np-site .np-nav {
+    position:sticky !important;
+    top:0 !important;
+    z-index:50 !important;
+  }
+
+  /* Decorative pseudo-elements must never become a touch surface. */
+  .student-v7::before,
+  .student-v7::after,
+  .student-v7 .v7-hero::after,
+  .student-v7 .v7-quick-card::before,
+  .np-site::before,
+  .np-site::after,
+  .np-feature::after {
+    pointer-events:none !important;
   }
 }
 
-@media (max-width: 700px) {
-  html,
-  body,
-  #root,
-  .app,
-  .student-v7 {
-    overflow-y: auto !important;
-  }
+@media (max-width:380px) {
+  .student-v7 { padding-left:11px !important; padding-right:11px !important; }
 }
