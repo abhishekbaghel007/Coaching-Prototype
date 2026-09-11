@@ -30,18 +30,60 @@ function useMobileTouchBridge() {
 
     let lastY = 0;
     let active = false;
+    let manual = false;
+    let stalledMoves = 0;
+    let lastScrollTop = 0;
+    let velocity = 0;
+    let momentumFrame = 0;
 
     const interactive = (target: EventTarget | null) => {
       const el = target instanceof Element ? target : null;
       return !!el?.closest('button,a,input,textarea,select,[contenteditable="true"],[role="button"]');
     };
 
+    const rootScroller = () => document.scrollingElement || document.documentElement;
+
+    const stopMomentum = () => {
+      if (momentumFrame) cancelAnimationFrame(momentumFrame);
+      momentumFrame = 0;
+    };
+
+    const startMomentum = () => {
+      stopMomentum();
+      let v = velocity;
+      const step = () => {
+        const root = rootScroller();
+        const max = Math.max(0, root.scrollHeight - window.innerHeight);
+        if (Math.abs(v) < 0.15 || max <= 0) {
+          momentumFrame = 0;
+          return;
+        }
+        const next = Math.max(0, Math.min(max, root.scrollTop + v));
+        root.scrollTop = next;
+        if (next <= 0 || next >= max) {
+          momentumFrame = 0;
+          return;
+        }
+        v *= 0.94;
+        momentumFrame = requestAnimationFrame(step);
+      };
+      if (Math.abs(v) >= 0.8) momentumFrame = requestAnimationFrame(step);
+    };
+
     const onStart = (event: TouchEvent) => {
+      stopMomentum();
+      manual = false;
+      stalledMoves = 0;
+      velocity = 0;
+
       if (event.touches.length !== 1 || interactive(event.target)) {
         active = false;
         return;
       }
+
+      const root = rootScroller();
       lastY = event.touches[0].clientY;
+      lastScrollTop = root.scrollTop;
       active = true;
     };
 
@@ -52,24 +94,44 @@ function useMobileTouchBridge() {
         return;
       }
 
+      const root = rootScroller();
       const y = event.touches[0].clientY;
       const delta = lastY - y;
       lastY = y;
-      if (Math.abs(delta) < 1) return;
+      if (Math.abs(delta) < 0.5) return;
 
-      const root = document.scrollingElement || document.documentElement;
+      const current = root.scrollTop;
+
+      // Let the browser handle normal touch scrolling. The JS bridge only
+      // takes over if the page demonstrably refuses to move for two moves.
+      if (!manual) {
+        if (Math.abs(current - lastScrollTop) > 0.5) {
+          active = false;
+          return;
+        }
+        stalledMoves += 1;
+        lastScrollTop = current;
+        if (stalledMoves < 2) return;
+        manual = true;
+      }
+
       const max = Math.max(0, root.scrollHeight - window.innerHeight);
       if (max <= 0) return;
 
-      const current = root.scrollTop;
       const next = Math.max(0, Math.min(max, current + delta));
       if (next !== current) {
         event.preventDefault();
         root.scrollTop = next;
+        velocity = velocity * 0.65 + delta * 0.35;
       }
     };
 
-    const end = () => { active = false; };
+    const end = () => {
+      if (manual) startMomentum();
+      active = false;
+      manual = false;
+      stalledMoves = 0;
+    };
 
     document.addEventListener('touchstart', onStart, { capture: true, passive: true });
     document.addEventListener('touchmove', onMove, { capture: true, passive: false });
@@ -77,6 +139,7 @@ function useMobileTouchBridge() {
     document.addEventListener('touchcancel', end, { capture: true, passive: true });
 
     return () => {
+      stopMomentum();
       document.removeEventListener('touchstart', onStart, true);
       document.removeEventListener('touchmove', onMove, true);
       document.removeEventListener('touchend', end, true);
