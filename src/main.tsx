@@ -62,12 +62,12 @@ function WebsiteScrollShell() {
     }));
 
     for (const el of elements) {
-      el.style.setProperty('overflow-y', 'auto', 'important');
+      el.style.setProperty('overflow-y', 'visible', 'important');
       el.style.setProperty('overflow-x', 'hidden', 'important');
       el.style.setProperty('height', 'auto', 'important');
       el.style.setProperty('min-height', '100%', 'important');
       el.style.setProperty('max-height', 'none', 'important');
-      el.style.setProperty('position', 'relative', 'important');
+      el.style.setProperty('position', 'static', 'important');
       el.style.setProperty('touch-action', 'pan-y', 'important');
     }
 
@@ -77,7 +77,6 @@ function WebsiteScrollShell() {
       site.style.setProperty('min-height', '100vh', 'important');
       site.style.setProperty('max-height', 'none', 'important');
       site.style.setProperty('overflow', 'visible', 'important');
-      site.style.setProperty('overflow-y', 'visible', 'important');
       site.style.setProperty('touch-action', 'pan-y', 'important');
     }
 
@@ -103,7 +102,6 @@ function StudentShell() {
     const body = document.body;
     const root = document.getElementById('root');
     const app = document.querySelector<HTMLElement>('.app');
-    const homeHeader = document.querySelector<HTMLElement>('.student-v7 .v7-top');
     const elements = [html, body, root, app].filter(Boolean) as HTMLElement[];
     const previous = elements.map(el => ({
       el,
@@ -114,59 +112,24 @@ function StudentShell() {
       maxHeight: el.style.maxHeight,
       position: el.style.position,
     }));
-    const previousHeader = homeHeader ? {
-      position: homeHeader.style.position,
-      top: homeHeader.style.top,
-      zIndex: homeHeader.style.zIndex,
-      display: homeHeader.style.display,
-    } : null;
 
     for (const el of elements) {
-      el.style.setProperty('overflow-y', 'auto', 'important');
+      el.style.setProperty('overflow-y', 'visible', 'important');
       el.style.setProperty('overflow-x', 'hidden', 'important');
       el.style.setProperty('height', 'auto', 'important');
       el.style.setProperty('min-height', '100%', 'important');
       el.style.setProperty('max-height', 'none', 'important');
+      el.style.setProperty('position', 'static', 'important');
+      el.style.setProperty('touch-action', 'pan-y', 'important');
     }
-    if (root) root.style.setProperty('position', 'static', 'important');
-    if (body) body.style.setProperty('position', 'static', 'important');
+
     if (app) {
       app.style.setProperty('overflow', 'visible', 'important');
       app.style.setProperty('height', 'auto', 'important');
       app.style.setProperty('max-height', 'none', 'important');
     }
 
-    // The global navigation in App is the only navigation bar needed on the
-    // student home. The inner v7 header duplicated it and was the blank box
-    // visible below the navbar, so remove that duplicate surface entirely.
-    if (homeHeader) {
-      homeHeader.style.setProperty('display', 'none', 'important');
-    }
-
-    // Chromium/Electron can keep wheel/touchpad scrolling attached to a nested
-    // overflow surface even after CSS has been normalized. For the main student
-    // page, route wheel deltas directly to the document viewport. Internal
-    // Study Centre/modal surfaces retain their own native scrolling.
-    const onWheel = (event: WheelEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest('.student-v7')) return;
-      if (target.closest('.v7-explore, .v7-sheet-backdrop, [role="dialog"]')) return;
-      if (event.ctrlKey) return;
-
-      const delta = event.deltaMode === WheelEvent.DOM_DELTA_LINE
-        ? event.deltaY * 16
-        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-          ? event.deltaY * window.innerHeight
-          : event.deltaY;
-      if (!Number.isFinite(delta) || delta === 0) return;
-
-      event.preventDefault();
-      window.scrollBy(0, delta);
-    };
-    document.addEventListener('wheel', onWheel, { capture: true, passive: false });
-
     return () => {
-      document.removeEventListener('wheel', onWheel, true);
       for (const item of previous) {
         item.el.style.overflowY = item.overflowY;
         item.el.style.overflowX = item.overflowX;
@@ -174,12 +137,6 @@ function StudentShell() {
         item.el.style.minHeight = item.minHeight;
         item.el.style.maxHeight = item.maxHeight;
         item.el.style.position = item.position;
-      }
-      if (homeHeader && previousHeader) {
-        homeHeader.style.position = previousHeader.position;
-        homeHeader.style.top = previousHeader.top;
-        homeHeader.style.zIndex = previousHeader.zIndex;
-        homeHeader.style.display = previousHeader.display;
       }
     };
   }, []);
