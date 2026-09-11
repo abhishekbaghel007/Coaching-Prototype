@@ -99,3 +99,37 @@ html, body, #root {
     display:none !important;
   }
 }
+
+/* FINAL MOBILE SCROLL RESET
+   Keep one native document scroll surface. Do not trap touch gestures on
+   html/body/root or on the two route shells. */
+@media (max-width:760px) {
+  html,
+  body,
+  #root,
+  .app,
+  .coaching-home-page,
+  .student-home-stage,
+  .np-site {
+    height:auto !important;
+    min-height:100% !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    overscroll-behavior-y:auto !important;
+    touch-action:auto !important;
+  }
+
+  html,
+  body {
+    min-height:100dvh !important;
+  }
+
+  #root,
+  .app,
+  .coaching-home-page,
+  .student-home-stage,
+  .np-site {
+    overflow-y:visible !important;
+  }
+}
