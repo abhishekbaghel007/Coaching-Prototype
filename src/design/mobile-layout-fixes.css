@@ -8,26 +8,12 @@ html, body, #root {
 }
 
 @media (max-width:700px) {
-  html, body {
-    overflow-x:clip !important;
-  }
-  body {
-    width:100% !important;
-    max-width:100vw !important;
-  }
-  #root {
-    width:100% !important;
-    max-width:100vw !important;
-    overflow-x:clip !important;
-  }
-
   /* Student app: use the parent width, not 100vw + negative margins. */
   .student-route .student-v7 {
     width:100% !important;
     max-width:100% !important;
     min-width:0 !important;
     box-sizing:border-box !important;
-    overflow-x:clip !important;
   }
   .student-route .student-v7 .v7-top {
     width:100% !important;
@@ -97,39 +83,5 @@ html, body, #root {
   html.website-route .student-route .v7-top,
   html.website-route [class~="v7-top"] {
     display:none !important;
-  }
-}
-
-/* FINAL MOBILE SCROLL RESET
-   Keep one native document scroll surface. Do not trap touch gestures on
-   html/body/root or on the two route shells. */
-@media (max-width:760px) {
-  html,
-  body,
-  #root,
-  .app,
-  .coaching-home-page,
-  .student-home-stage,
-  .np-site {
-    height:auto !important;
-    min-height:100% !important;
-    max-height:none !important;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    overscroll-behavior-y:auto !important;
-    touch-action:auto !important;
-  }
-
-  html,
-  body {
-    min-height:100dvh !important;
-  }
-
-  #root,
-  .app,
-  .coaching-home-page,
-  .student-home-stage,
-  .np-site {
-    overflow-y:visible !important;
   }
 }
