@@ -1,3 +1,5 @@
+@import '../mobile-layout-fix.css';
+
 /* Final responsive guardrails. Visual effects stay intact. */
 
 /* Never allow a route shell or full-viewport effect to create horizontal scroll. */
@@ -8,26 +10,12 @@ html, body, #root {
 }
 
 @media (max-width:700px) {
-  html, body {
-    overflow-x:clip !important;
-  }
-  body {
-    width:100% !important;
-    max-width:100vw !important;
-  }
-  #root {
-    width:100% !important;
-    max-width:100vw !important;
-    overflow-x:clip !important;
-  }
-
   /* Student app: use the parent width, not 100vw + negative margins. */
   .student-route .student-v7 {
     width:100% !important;
     max-width:100% !important;
     min-width:0 !important;
     box-sizing:border-box !important;
-    overflow-x:clip !important;
   }
   .student-route .student-v7 .v7-top {
     width:100% !important;

@@ -24,6 +24,67 @@ if (typeof document !== 'undefined') {
   document.body.classList.toggle('student-route', !websiteRoute && !isAdmin);
 }
 
+function useMobileTouchBridge() {
+  useEffect(() => {
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+
+    let lastY = 0;
+    let active = false;
+
+    const interactive = (target: EventTarget | null) => {
+      const el = target instanceof Element ? target : null;
+      return !!el?.closest('button,a,input,textarea,select,[contenteditable="true"],[role="button"]');
+    };
+
+    const onStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1 || interactive(event.target)) {
+        active = false;
+        return;
+      }
+      lastY = event.touches[0].clientY;
+      active = true;
+    };
+
+    const onMove = (event: TouchEvent) => {
+      if (!active || event.touches.length !== 1) return;
+      if (interactive(event.target)) {
+        active = false;
+        return;
+      }
+
+      const y = event.touches[0].clientY;
+      const delta = lastY - y;
+      lastY = y;
+      if (Math.abs(delta) < 1) return;
+
+      const root = document.scrollingElement || document.documentElement;
+      const max = Math.max(0, root.scrollHeight - window.innerHeight);
+      if (max <= 0) return;
+
+      const current = root.scrollTop;
+      const next = Math.max(0, Math.min(max, current + delta));
+      if (next !== current) {
+        event.preventDefault();
+        root.scrollTop = next;
+      }
+    };
+
+    const end = () => { active = false; };
+
+    document.addEventListener('touchstart', onStart, { capture: true, passive: true });
+    document.addEventListener('touchmove', onMove, { capture: true, passive: false });
+    document.addEventListener('touchend', end, { capture: true, passive: true });
+    document.addEventListener('touchcancel', end, { capture: true, passive: true });
+
+    return () => {
+      document.removeEventListener('touchstart', onStart, true);
+      document.removeEventListener('touchmove', onMove, true);
+      document.removeEventListener('touchend', end, true);
+      document.removeEventListener('touchcancel', end, true);
+    };
+  }, []);
+}
+
 function useProgressLauncher() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -68,6 +129,11 @@ const Root = isAdmin
         ? WebsiteShell
         : StudentShell;
 
+function RootWithTouch() {
+  useMobileTouchBridge();
+  return <Root />;
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><Root /></React.StrictMode>,
+  <React.StrictMode><RootWithTouch /></React.StrictMode>,
 );
