@@ -499,3 +499,23 @@ body:has(.np-site) .np-site {
 @media (prefers-reduced-motion:reduce) {
   html:has(.np-site) { scroll-behavior:auto; }
 }
+
+
+/* Student homepage: the document remains the only vertical scroll container. */
+html.student-route, body.student-route, body.student-route #root {
+  height:auto !important; max-height:none !important;
+  overflow-x:clip !important; overflow-y:visible !important;
+}
+html.student-route { min-height:100dvh !important; overflow-y:auto !important; }
+body.student-route, body.student-route #root { min-height:100dvh !important; }
+body.student-route #root > .app,
+body.student-route .app,
+body.student-route .app > .page,
+body.student-route .app > main,
+body.student-route .student-home-stage,
+body.student-route .student-v7 {
+  height:auto !important; max-height:none !important;
+  overflow:visible !important; overscroll-behavior-y:auto !important;
+}
+body.student-route .app { min-height:100dvh !important; position:relative !important; }
+@media (min-width:761px) { body.student-route .student-v7 { padding-bottom:120px !important; } }
