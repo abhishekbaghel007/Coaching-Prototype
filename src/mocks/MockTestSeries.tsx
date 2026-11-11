@@ -200,7 +200,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
             <article className="mock-series-card" key={paper.id}>
               <div className="mock-series-card-top">
                 <span className="mock-series-index">TEST {String(index + 1).padStart(2, '0')}</span>
-                <span className={ready ? 'mock-series-state ready' : 'mock-series-state'}>{ready ? 'PAPER READY' : 'QUESTION REVIEW'}</span>
+                <span className={ready ? 'mock-series-state ready' : 'mock-series-state'}>{ready ? 'PAPER READY' : score ? 'SCORECARD READY' : 'PAPER NOT MAPPED'}</span>
               </div>
               <h3>{paper.title}</h3>
               <div className="mock-series-date">
@@ -252,14 +252,30 @@ export default function MockTestSeries({ onAttempt }: Props) {
                   {activeAnalysis?.paper.id === paper.id ? 'Close analysis' : 'View full analysis ↗'}
                 </button>
               )}
-              <button
-                className="mock-series-attempt"
-                disabled={!ready}
-                onClick={() => onAttempt(paper)}
-              >
-                {ready ? 'Attempt paper →' : 'CBT question mapping pending'}
-              </button>
-              <small className="mock-series-foot">{ready ? 'Opens the timed test interface' : 'Question text and answer key still need verification'}</small>
+              {ready ? (
+                <button
+                  className="mock-series-attempt"
+                  onClick={() => onAttempt(paper)}
+                >
+                  Attempt paper →
+                </button>
+              ) : score?.pdf_path ? (
+                <a
+                  className="mock-series-attempt mock-series-paper-review"
+                  href={publicPdfUrl(score.pdf_path)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Review paper PDF ↗
+                </a>
+              ) : (
+                <button className="mock-series-attempt" disabled>
+                  Paper PDF unavailable
+                </button>
+              )}
+              <small className="mock-series-foot">
+                {ready ? 'Opens the timed test interface' : 'Open the question paper or OMR sheet above to review the original test.'}
+              </small>
             </article>
           );
         })}
@@ -311,7 +327,7 @@ const css = `
 .mock-series-subject>span{display:block;margin-top:5px;color:var(--app-muted);font-size:8px;line-height:1.4}
 .mock-series-analysis{width:100%;min-height:37px;margin-top:12px;border:1px solid var(--app-line);border-radius:10px;background:transparent;color:var(--text);font-size:10px;font-weight:850;cursor:pointer}
 .mock-series-attempt{width:100%;min-height:39px;margin-top:9px;border:0;border-radius:10px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}
-.mock-series-attempt:disabled{background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--app-muted);cursor:not-allowed;border:1px solid var(--app-line)}
+.mock-series-paper-review{display:flex;align-items:center;justify-content:center;text-decoration:none}.mock-series-attempt:disabled{background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--app-muted);cursor:not-allowed;border:1px solid var(--app-line)}
 .mock-series-foot{display:block;margin-top:7px;color:var(--app-muted);font-size:8px;line-height:1.45}
 @media(max-width:900px){.mock-series-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.mock-series-heading{align-items:flex-start}.mock-series-heading h2{font-size:29px}.mock-series-grid{grid-template-columns:1fr}.mock-series-card{padding:15px}.mock-series-count{font-size:8px}}
