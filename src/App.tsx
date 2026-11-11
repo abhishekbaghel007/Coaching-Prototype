@@ -256,7 +256,7 @@ export default function App() {
   const [results, setResults] = useState<Result[]>(() => read(STORAGE.results, []));
   const [answerHistory, setAnswerHistory] = useState<AnswerRecord[]>(() => read(STORAGE.answers, []));
   const [theme, setTheme] = useState<ThemeId>('teal');
-  const [appearance, setAppearance] = useState<Appearance>('light');
+  const [appearance, setAppearance] = useState<Appearance>('dark');
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -323,7 +323,14 @@ export default function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem(STORAGE.theme);
     if (savedTheme && THEMES.some(t => t.id === savedTheme)) setTheme(savedTheme as ThemeId);
-    setAppearance(localStorage.getItem(STORAGE.appearance) === 'dark' ? 'dark' : 'light');
+    const appearanceVersion = 'neetprep-dark-default-v1';
+    if (localStorage.getItem(appearanceVersion) !== '1') {
+      localStorage.setItem(STORAGE.appearance, 'dark');
+      localStorage.setItem(appearanceVersion, '1');
+      setAppearance('dark');
+    } else {
+      setAppearance(localStorage.getItem(STORAGE.appearance) === 'light' ? 'light' : 'dark');
+    }
 
     let cancelled = false;
     const hydrate = async (nextUser: User | null) => {
@@ -423,7 +430,9 @@ export default function App() {
           finishedAt: new Date(item.finished_at).getTime(),
         })));
         if (snapshot.theme && THEMES.some(t => t.id === snapshot.theme)) setTheme(snapshot.theme as ThemeId);
-        if (snapshot.appearance === 'light' || snapshot.appearance === 'dark') setAppearance(snapshot.appearance);
+        const localAppearance = localStorage.getItem(STORAGE.appearance);
+        if (localAppearance === 'light' || localAppearance === 'dark') setAppearance(localAppearance);
+        else if (snapshot.appearance === 'light' || snapshot.appearance === 'dark') setAppearance(snapshot.appearance);
         setCloudReady(true);
       } catch (error) {
         console.error('neetprep cloud hydrate failed', error);
