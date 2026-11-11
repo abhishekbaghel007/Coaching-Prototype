@@ -9,7 +9,7 @@ import ProgressFinal from './progress/ProgressFinal';
 import MockTestSeries from './mocks/MockTestSeries';
 
 type Question = (typeof QUESTIONS)[number] & { correct_indices?: number[]; status?: 'dropped' };
-type Tab = 'home' | 'practice' | 'mocks' | 'saved' | 'mistakes' | 'progress';
+type Tab = 'home' | 'practice' | 'mocks' | 'make-mock' | 'saved' | 'mistakes' | 'progress';
 type SolverMode = 'practice' | 'mock';
 type ThemeId = 'violet' | 'blue' | 'teal' | 'rose' | 'amber' | 'slate' | 'indigo' | 'mint' | 'coral';
 type Appearance = 'dark' | 'light';
@@ -864,17 +864,7 @@ export default function App() {
   }
 
   function renderMocks() {
-    const available = questions.filter(q => mockSubjects.includes(q.subject));
-    const maxCount = Math.max(1, available.length);
-    const count = Math.min(mockCount, maxCount);
-    const subjectCounts = (['Physics','Chemistry','Biology'] as Question['subject'][]).map(subject => ({
-      subject,
-      count: questions.filter(q => q.subject === subject).length,
-    }));
-    const subjectIcon: Record<Question['subject'], string> = { Physics: 'P', Chemistry: 'C', Biology: 'B' };
-    const subjectTone: Record<Question['subject'], string> = { Physics: 'blue', Chemistry: 'teal', Biology: 'mint' };
-    return <main className="page mock-builder-page">
-      <div className="mock-builder-top"><button className="ghost-button" onClick={() => go('home')}>← Home</button><span className="exam-pill">TIMED MOCK EXAM</span></div>
+    return <main className="page mock-series-page">
       <MockTestSeries onAttempt={paper => {
         const pool = paper.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean) as Question[];
         if (!pool.length || pool.length !== paper.questionIds.length) {
@@ -884,6 +874,20 @@ export default function App() {
         startAttempt(pool, 'mock', paper.title, 180 * 60);
         setPaletteOpen(true);
       }} />
+    </main>;
+  }
+
+  function renderMakeMock() {
+    const available = questions.filter(q => mockSubjects.includes(q.subject));
+    const maxCount = Math.max(1, available.length);
+    const count = Math.min(mockCount, maxCount);
+    const subjectCounts = (['Physics','Chemistry','Biology'] as Question['subject'][]).map(subject => ({
+      subject,
+      count: questions.filter(q => q.subject === subject).length,
+    }));
+
+    return <main className="page mock-builder-page">
+      <div className="mock-builder-top"><button className="ghost-button" onClick={() => go('mocks')}>← Mock Tests</button><span className="exam-pill">TIMED MOCK EXAM</span></div>
       <section className="mock-builder-hero"><div><span className="section-kicker">NEET UG / EXAM MODE</span><h1>Build your own mock exam.</h1><p>Choose exactly what you want to test. During the exam, answers stay hidden and the interface follows an NTA-style computer based test flow.</p></div><div className="mock-summary"><small>YOUR MOCK</small><strong>{count}</strong><span>questions</span><hr/><b>{mockDuration} min · {mockSubjects.length} subjects</b></div></section>
 
       <div className="mock-builder-grid">
@@ -1098,7 +1102,7 @@ export default function App() {
     .app{--apple-blue:#0a84ff;background:var(--app-bg);color:var(--text)}
     .app[data-appearance='light']{--apple-blue:#007aff}
     .top-nav{height:72px;padding:0 34px;grid-template-columns:220px 1fr auto;background:color-mix(in srgb,var(--app-bg) 88%,transparent);border-bottom-color:color-mix(in srgb,var(--text) 8%,transparent);box-shadow:none}
-    .brand-mark{width:36px;height:36px;border-radius:11px;box-shadow:none}.brand{font-size:20px}.top-nav nav button{font-size:13px;padding:10px 14px;border-radius:12px}.top-nav nav button.active{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
+    .brand-mark{width:36px;height:36px;border-radius:11px;box-shadow:none}.brand{font-size:20px}.top-nav nav button{font-size:12px;padding:10px 11px;border-radius:12px;white-space:nowrap}.top-nav nav button.active{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
     .nav-theme,.nav-search,.nav-bell,.nav-login{height:40px;border:1px solid color-mix(in srgb,var(--text) 8%,transparent);background:color-mix(in srgb,var(--text) 4%,transparent);border-radius:20px}.nav-theme{padding:0 14px}.nav-search{padding:0 14px}.nav-avatar{width:40px;height:40px;border-radius:50%;background:color-mix(in srgb,var(--text) 6%,transparent);border-color:color-mix(in srgb,var(--text) 8%,transparent)}
     .page{width:min(1180px,calc(100% - 68px));padding:58px 0 120px}.coaching-home-page{width:100%;max-width:none;padding:0 0 120px}.student-home-stage{max-width:1180px;padding:0 34px}
     .page-title h1{font-size:56px;letter-spacing:-2.8px}.page-title p{font-size:14px}.filter-panel{border-radius:20px;padding:10px;background:color-mix(in srgb,var(--text) 3%,transparent)}.question-row,.history-row,.revision-card,.subject-card,.metric-card,.performance-panel,.builder-card,.mock-rules-card,.empty-state{border-radius:20px;background:color-mix(in srgb,var(--text) 3.5%,transparent);border-color:color-mix(in srgb,var(--text) 8%,transparent);box-shadow:none}.question-row:hover,.history-row:hover,.revision-card:hover,.subject-card:hover{transform:none;background:color-mix(in srgb,var(--text) 6%,transparent)}
@@ -1351,10 +1355,11 @@ export default function App() {
   `;
   return <div className={`app ${tab === 'progress' ? 'progress-mode' : ''}`} data-theme={theme} data-appearance={appearance} style={{ '--accent': currentTheme.color } as CSSProperties}>
     <style>{mobilePolishCss}</style>
-    <header className="top-nav"><button className="brand" onClick={() => go('home')}><span className="brand-mark">N</span><span>neet<span>prep</span></span></button><nav>{([['home', 'Home'], ['practice', 'Practice'], ['mocks', 'Tests'], ['saved', 'Saved'], ['mistakes', 'Mistakes'], ['progress', 'Progress']] as [Tab, string][]).map(([id, label]) => <button type="button" className={tab === id ? 'active' : ''} key={id} onClick={() => { setResult(null); setBackMenuOpen(false); setTab(id); window.scrollTo({ top: 0, behavior: 'auto' }); }}>{label}</button>)}</nav><div className="nav-actions"><button className="nav-theme" onClick={() => setAppearanceOpen(true)}><i style={{ background: currentTheme.color }} /> Theme</button><button className="nav-search" onClick={() => { go('practice'); setTimeout(() => document.querySelector<HTMLInputElement>('.search-field input')?.focus(), 50); }}>⌕ <span>Search</span></button><button className="nav-bell" onClick={openAnnouncements} aria-label="Teacher announcements"><span>✦</span>{announcements.length > 0 && <i>{Math.min(announcements.length, 9)}</i>}</button>{user ? <button className="nav-avatar" onClick={() => setProfileOpen(true)}>{(user.email?.[0] ?? 'N').toUpperCase()}</button> : <button className="nav-login" onClick={() => setAuthOpen(true)}>Log in</button>}</div></header>
+    <header className="top-nav"><button className="brand" onClick={() => go('home')}><span className="brand-mark">N</span><span>neet<span>prep</span></span></button><nav>{([['home', 'Home'], ['practice', 'Practice'], ['mocks', 'Tests'], ['make-mock', 'Make Mock Test'], ['saved', 'Saved'], ['mistakes', 'Mistakes'], ['progress', 'Progress']] as [Tab, string][]).map(([id, label]) => <button type="button" className={tab === id ? 'active' : ''} key={id} onClick={() => { setResult(null); setBackMenuOpen(false); setTab(id); window.scrollTo({ top: 0, behavior: 'auto' }); }}>{label}</button>)}</nav><div className="nav-actions"><button className="nav-theme" onClick={() => setAppearanceOpen(true)}><i style={{ background: currentTheme.color }} /> Theme</button><button className="nav-search" onClick={() => { go('practice'); setTimeout(() => document.querySelector<HTMLInputElement>('.search-field input')?.focus(), 50); }}>⌕ <span>Search</span></button><button className="nav-bell" onClick={openAnnouncements} aria-label="Teacher announcements"><span>✦</span>{announcements.length > 0 && <i>{Math.min(announcements.length, 9)}</i>}</button>{user ? <button className="nav-avatar" onClick={() => setProfileOpen(true)}>{(user.email?.[0] ?? 'N').toUpperCase()}</button> : <button className="nav-login" onClick={() => setAuthOpen(true)}>Log in</button>}</div></header>
     {tab === 'home' && renderHome()}
     {tab === 'practice' && renderPractice()}
     {tab === 'mocks' && renderMocks()}
+    {tab === 'make-mock' && renderMakeMock()}
     {tab === 'saved' && renderRevision('saved')}
     {tab === 'mistakes' && renderRevision('mistakes')}
     {tab === 'progress' && renderProgress()}
@@ -1366,7 +1371,7 @@ export default function App() {
         <div className="back-menu-handle" />
         <div className="back-menu-head"><div><span className="section-kicker">NEETPREP</span><h2>Where next?</h2></div><button className="back-menu-close" onClick={() => setBackMenuOpen(false)} aria-label="Close navigation">×</button></div>
         <div className="back-menu-grid">
-          {([['home','Home'],['practice','Practice'],['mocks','Tests'],['saved','Saved'],['mistakes','Mistakes'],['progress','Progress']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => { setBackMenuOpen(false); go(id); }}><span>{label === 'Home' ? '⌂' : label === 'Practice' ? '◉' : label === 'Tests' ? '▤' : label === 'Saved' ? '▢' : label === 'Mistakes' ? '◌' : '↗'}</span><b>{label}</b></button>)}
+          {([['home','Home'],['practice','Practice'],['mocks','Tests'],['make-mock','Make Mock Test'],['saved','Saved'],['mistakes','Mistakes'],['progress','Progress']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => { setBackMenuOpen(false); go(id); }}><span>{label === 'Home' ? '⌂' : label === 'Practice' ? '◉' : label === 'Tests' ? '▤' : label === 'Make Mock Test' ? '✦' : label === 'Saved' ? '▢' : label === 'Mistakes' ? '◌' : '↗'}</span><b>{label}</b></button>)}
         </div>
         <div className="back-menu-account"><button onClick={() => { setBackMenuOpen(false); openAccount(); }}><span>{user ? (user.email?.[0] ?? 'A').toUpperCase() : 'A'}</span><div><b>{user ? 'Account' : 'Sign in'}</b><small>{user ? user.email : 'Sync your progress across devices'}</small></div><strong>›</strong></button></div>
       </div>
