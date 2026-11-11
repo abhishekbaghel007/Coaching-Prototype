@@ -885,7 +885,16 @@ export default function App() {
   }
 
   function renderProgress() {
-    return <ProgressFinal onClose={() => go('home')} sampleDemo={user?.email?.trim().toLowerCase() === 'suprvirat@gmail.com'} />;
+    return <ProgressFinal
+      onClose={() => go('home')}
+      onPractice={() => go('practice')}
+      answers={answerHistory}
+      results={results}
+      daily={daily}
+      saved={saved}
+      mistakes={mistakes}
+      target={target}
+    />;
   }
 
   function renderPracticeSolver() {
