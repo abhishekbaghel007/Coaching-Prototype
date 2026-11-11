@@ -15,16 +15,20 @@ type MockSeriesScore = {
   total_score: number;
   physics_score: number;
   chemistry_score: number;
-  biology_score: number;
+  botany_score: number;
+  zoology_score: number;
   physics_correct: number;
   physics_incorrect: number;
   physics_unanswered: number;
   chemistry_correct: number;
   chemistry_incorrect: number;
   chemistry_unanswered: number;
-  biology_correct: number;
-  biology_incorrect: number;
-  biology_unanswered: number;
+  botany_correct: number;
+  botany_incorrect: number;
+  botany_unanswered: number;
+  zoology_correct: number;
+  zoology_incorrect: number;
+  zoology_unanswered: number;
   score_status: 'estimated' | 'verified';
 };
 
@@ -34,7 +38,7 @@ export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
   { id: 'neet-level-2026-09-27', title: 'NEET Level Test – 27-Sep', date: '2026-09-27', dateLabel: '27 Sep 2026', questionIds: [] },
   { id: 'neet-level-2026-10-11', title: 'NEET Level Test – 11-Oct', date: '2026-10-11', dateLabel: '11 Oct 2026', questionIds: [] },
   { id: 'neet-level-2026-10-25', title: 'NEET Level Test – 25-Oct', date: '2026-10-25', dateLabel: '25 Oct 2026', questionIds: [] },
-  { id: 'neet-level-2026-11-05', title: 'NEET Level Test – 05-Nov', date: '2026-11-05', dateLabel: '5 Nov 2026', questionIds: [] },
+  { id: 'neet-level-2026-11-05', title: 'NEET Level Test –05-Nov', date: '2026-11-05', dateLabel: '5 Nov 2026', questionIds: [] },
 ];
 
 type Props = {
@@ -61,7 +65,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
 
       const { data, error } = await supabase
         .from('mock_series_scores')
-        .select('mock_key,total_score,physics_score,chemistry_score,biology_score,physics_correct,physics_incorrect,physics_unanswered,chemistry_correct,chemistry_incorrect,chemistry_unanswered,biology_correct,biology_incorrect,biology_unanswered,score_status')
+        .select('mock_key,total_score,physics_score,chemistry_score,botany_score,zoology_score,physics_correct,physics_incorrect,physics_unanswered,chemistry_correct,chemistry_incorrect,chemistry_unanswered,botany_correct,botany_incorrect,botany_unanswered,zoology_correct,zoology_incorrect,zoology_unanswered,score_status')
         .eq('user_id', userId);
 
       if (!active) return;
@@ -112,14 +116,14 @@ export default function MockTestSeries({ onAttempt }: Props) {
         <div>
           <span className="section-kicker">YOUR COACHING TEST SERIES</span>
           <h2>Your mock test series.</h2>
-          <p>Six uploaded papers, with a subject-wise scorecard and question review panel.</p>
+          <p>Six papers with subject-wise scorecards and a question review workspace.</p>
         </div>
         <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} / 6 SCORED`}</span>
       </div>
 
       <div className="mock-series-note">
         <span aria-hidden="true">◎</span>
-        <p><b>Estimated scorecards.</b> The PDFs contain the question papers and OMR-sheet link, not marked responses or an answer key. These marks are estimated from the requested totals and a varied subject split, not verified exam attempts. NEET calculation: +4 correct, −1 incorrect, 0 unanswered.</p>
+        <p><b>Estimated scorecards.</b> The requested totals and four-subject splits are saved. They are not verified personal attempts: the uploaded PDFs contain the question papers and OMR-sheet link, not marked student responses.</p>
       </div>
 
       {scoreLoadFailed && (
@@ -133,16 +137,17 @@ export default function MockTestSeries({ onAttempt }: Props) {
           const ready = paper.questionIds.length > 0;
           const score = scores[paper.id];
           const subjectBreakdown = score ? [
-            { label: 'BIO', marks: score.biology_score, correct: score.biology_correct, incorrect: score.biology_incorrect, unanswered: score.biology_unanswered },
-            { label: 'PHY', marks: score.physics_score, correct: score.physics_correct, incorrect: score.physics_incorrect, unanswered: score.physics_unanswered },
-            { label: 'CHEM', marks: score.chemistry_score, correct: score.chemistry_correct, incorrect: score.chemistry_incorrect, unanswered: score.chemistry_unanswered },
+            { label: 'Physics', short: 'PHY', marks: score.physics_score, correct: score.physics_correct, incorrect: score.physics_incorrect, unanswered: score.physics_unanswered },
+            { label: 'Chemistry', short: 'CHEM', marks: score.chemistry_score, correct: score.chemistry_correct, incorrect: score.chemistry_incorrect, unanswered: score.chemistry_unanswered },
+            { label: 'Botany', short: 'BOT', marks: score.botany_score, correct: score.botany_correct, incorrect: score.botany_incorrect, unanswered: score.botany_unanswered },
+            { label: 'Zoology', short: 'ZOO', marks: score.zoology_score, correct: score.zoology_correct, incorrect: score.zoology_incorrect, unanswered: score.zoology_unanswered },
           ] : [];
 
           return (
             <article className="mock-series-card" key={paper.id}>
               <div className="mock-series-card-top">
                 <span className="mock-series-index">TEST {String(index + 1).padStart(2, '0')}</span>
-                <span className={ready ? 'mock-series-state ready' : 'mock-series-state'}>{ready ? 'PAPER READY' : 'PDF PENDING'}</span>
+                <span className={ready ? 'mock-series-state ready' : 'mock-series-state'}>{ready ? 'PAPER READY' : 'QUESTION REVIEW'}</span>
               </div>
               <h3>{paper.title}</h3>
               <div className="mock-series-date">
@@ -156,12 +161,12 @@ export default function MockTestSeries({ onAttempt }: Props) {
               {subjectBreakdown.length > 0 && (
                 <div className="mock-series-subjects">
                   {subjectBreakdown.map(subject => (
-                    <div className="mock-series-subject" key={subject.label}>
+                    <div className="mock-series-subject" key={subject.short}>
                       <div className="mock-series-subject-head">
-                        <small>{subject.label}</small>
+                        <small>{subject.short}</small>
                         <strong>{subject.marks}</strong>
                       </div>
-                      <span>{subject.correct} correct · {subject.incorrect} wrong · {subject.unanswered} blank</span>
+                      <span>{subject.correct}✓ · {subject.incorrect}✕ · {subject.unanswered} blank</span>
                     </div>
                   ))}
                 </div>
@@ -179,9 +184,9 @@ export default function MockTestSeries({ onAttempt }: Props) {
                 disabled={!ready}
                 onClick={() => onAttempt(paper)}
               >
-                {ready ? 'Attempt paper →' : 'Attempt paper · PDF mapping pending'}
+                {ready ? 'Attempt paper →' : 'CBT question mapping pending'}
               </button>
-              <small className="mock-series-foot">{ready ? 'Opens the timed test interface' : 'Question text and answer key are not mapped in the app yet'}</small>
+              <small className="mock-series-foot">{ready ? 'Opens the timed test interface' : 'Question text and answer key still need verification'}</small>
             </article>
           );
         })}
@@ -222,12 +227,12 @@ const css = `
 .mock-series-goal{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--app-line)}
 .mock-series-goal span{color:var(--app-muted);font-size:7px;font-weight:900;letter-spacing:.09em}
 .mock-series-goal b{color:var(--text);font-size:12px}
-.mock-series-subjects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
-.mock-series-subject{min-width:0;padding:8px 6px;border:1px solid var(--app-line);border-radius:9px;background:color-mix(in srgb,var(--text) 2%,transparent)}
+.mock-series-subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+.mock-series-subject{min-width:0;padding:8px 7px;border:1px solid var(--app-line);border-radius:9px;background:color-mix(in srgb,var(--text) 2%,transparent)}
 .mock-series-subject-head{display:flex;align-items:center;justify-content:space-between;gap:3px}
 .mock-series-subject-head small{color:var(--app-muted);font-size:7px;font-weight:900;letter-spacing:.06em}
 .mock-series-subject-head strong{color:var(--text);font-size:11px}
-.mock-series-subject>span{display:block;margin-top:5px;color:var(--app-muted);font-size:7px;line-height:1.4}
+.mock-series-subject>span{display:block;margin-top:5px;color:var(--app-muted);font-size:8px;line-height:1.4}
 .mock-series-analysis{width:100%;min-height:37px;margin-top:12px;border:1px solid var(--app-line);border-radius:10px;background:transparent;color:var(--text);font-size:10px;font-weight:850;cursor:pointer}
 .mock-series-attempt{width:100%;min-height:39px;margin-top:9px;border:0;border-radius:10px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}
 .mock-series-attempt:disabled{background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--app-muted);cursor:not-allowed;border:1px solid var(--app-line)}
