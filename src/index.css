@@ -443,3 +443,59 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}bu
   .practice-option-copy b{font-size:9px}
   .practice-actionbar{left:8px;right:8px;bottom:max(7px,env(safe-area-inset-bottom));border-radius:16px;background:rgba(16,21,25,.95)}
 }
+
+/* Native root scrolling and homepage-only scroll safety. */
+html, body, #root {
+  width:100%;
+  max-width:100%;
+  min-height:100%;
+  height:auto;
+  overflow-x:clip;
+  overflow-y:auto;
+  scroll-behavior:smooth;
+}
+body:has(.np-site) {
+  min-height:100dvh;
+  overflow-y:auto;
+  overscroll-behavior-y:auto;
+}
+body:has(.np-site) #root,
+body:has(.np-site) .np-site {
+  min-height:100dvh;
+  height:auto;
+  max-height:none;
+  overflow-y:visible;
+  overflow-x:clip;
+  touch-action:pan-y;
+}
+.np-site {
+  position:relative;
+  min-height:100dvh;
+  height:auto;
+  overflow:visible;
+}
+.np-site .np-nav {
+  position:sticky;
+  top:0;
+  z-index:90;
+}
+.np-site section[id] { scroll-margin-top:86px; }
+@media (max-width:680px) {
+  .np-site .np-navin {
+    width:calc(100% - 28px);
+    min-height:62px;
+    height:auto;
+  }
+  .np-site .np-mobilemenu {
+    position:relative;
+    z-index:91;
+  }
+  .np-site .np-mobilemenu .cta {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  html:has(.np-site) { scroll-behavior:auto; }
+}
