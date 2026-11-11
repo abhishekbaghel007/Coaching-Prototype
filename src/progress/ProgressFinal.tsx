@@ -1,7 +1,3 @@
-import { useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
-import { QUESTIONS } from '../data/questions';
-
 type Answer = {
   id?: string;
   question_id: string;
@@ -9,6 +5,7 @@ type Answer = {
   subject: 'Physics' | 'Chemistry' | 'Biology';
   answeredAt: number;
 };
+
 type Result = {
   id?: string;
   title: string;
@@ -17,219 +14,177 @@ type Result = {
   startedAt?: number;
   finishedAt: number;
 };
-const subjects = ['Physics', 'Chemistry', 'Biology'] as const;
-const day = (d: Date) => String(d.getFullYear()) + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 
-function Icon({n}:{n:string}) {
-  return <span aria-hidden>{({back:'‹',spark:'✦',check:'✓',target:'◎',flame:'♨',chart:'⌁',book:'▱',clock:'◷',arrow:'→'} as Record<string,string>)[n]||'•'}</span>;
-}
-function scoreSummary(r: Result) {
-  let correct=0, incorrect=0, dropped=0;
-  r.ids.forEach(id => {
-    const q=QUESTIONS.find(x=>x.id===id);
-    if(!q)return;
-    if(q.status==='dropped'){dropped+=1;return;}
-    const selected=r.answers[id];
-    if(selected===undefined)return;
-    const accepted=q.correct_indices ?? (q.correct_index==null?[]:[q.correct_index]);
-    if(accepted.includes(selected))correct+=1;else incorrect+=1;
-  });
-  const marks=correct*4-incorrect;
-  const total=r.ids.length-dropped;
-  return {correct,incorrect,dropped,marks,total,accuracy:correct+incorrect?Math.round(correct/(correct+incorrect)*100):0,percent:total?Math.max(0,Math.min(100,marks/(total*4)*100)):0};
-}
 type ProgressFinalProps = {
-  onClose?:()=>void;
-  onPractice?:()=>void;
-  website?:boolean;
-  answers?:Answer[];
-  results?:Result[];
-  daily?:Record<string,number>;
-  saved?:string[];
-  mistakes?:string[];
-  target?:number;
+  onClose?: () => void;
+  onPractice?: () => void;
+  website?: boolean;
+  answers?: Answer[];
+  results?: Result[];
+  daily?: Record<string, number>;
+  saved?: string[];
+  mistakes?: string[];
+  target?: number;
 };
-export default function ProgressFinal({onClose,onPractice,website=false,answers=[],results=[],daily={},saved=[],mistakes=[],target=650}:ProgressFinalProps) {
-  const [range,setRange]=useState<'7D'|'30D'|'ALL'>('30D');
-  const cutoff=range==='ALL'?0:Date.now()-(range==='7D'?7:30)*86400000;
-  const filtered=answers.filter(a=>a.answeredAt>=cutoff);
-  const total=filtered.length;
-  const correct=filtered.filter(a=>a.is_correct).length;
-  const accuracy=total?Math.round(correct/total*100):0;
-  const activeDays=Object.entries(daily).filter(([date,count])=>count>0&&(cutoff===0||new Date(date+'T12:00:00').getTime()>=cutoff)).length;
-  const streak=useMemo(()=>{
-    let n=0,d=new Date();
-    if(!(daily[day(d)]||0))d.setDate(d.getDate()-1);
-    while((daily[day(d)]||0)>0){n+=1;d.setDate(d.getDate()-1);}
-    return n;
-  },[daily]);
-  const subject=subjects.map(s=>{
-    const rows=filtered.filter(x=>x.subject===s);
-    const c=rows.filter(x=>x.is_correct).length;
-    return {s,n:rows.length,p:rows.length?Math.round(c/rows.length*100):0};
-  });
-  const tests=[...results].filter(r=>r.finishedAt>=cutoff).sort((x,y)=>y.finishedAt-x.finishedAt).slice(0,8).map(r=>({...scoreSummary(r),title:r.title,finishedAt:r.finishedAt}));
-  const latestMarks=tests.length?tests[0].marks:null;
-  const latestMax=tests.length?tests[0].total*4:null;
-  const weakest=[...subject].filter(x=>x.n>0).sort((x,y)=>x.p-y.p)[0];
-  const activity=Array.from({length:14},(_,i)=>{
-    const d=new Date();d.setDate(d.getDate()-(13-i));
-    return {label:d.toLocaleDateString(undefined,{weekday:'narrow'}),v:daily[day(d)]||0};
-  });
-  const maxDaily=Math.max(1,...activity.map(x=>x.v));
-  return <div className="pf" data-website={website?'1':'0'}><style>{css}</style>
-    <header className="pf-nav">
-      <button className="pf-round" onClick={onClose||(()=>history.back())} aria-label="Back to home"><Icon n="back"/></button>
-      <div><b>Progress</b><small>Your preparation at a glance</small></div>
-      <span className="pf-round pf-nav-spark"><Icon n="spark"/></span>
-    </header>
-    <main className="pf-wrap">
-      <div className="pf-range">{(['7D','30D','ALL'] as const).map(x=><button className={range===x?'on':''} onClick={()=>setRange(x)} key={x}>{x==='ALL'?'All time':x}</button>)}</div>
-      <section className="pf-hero">
-        <article className="pf-card pf-hello">
-          <span className="eyebrow">PERSONAL PREPARATION</span>
-          <h1>{website?'Your preparation, at a glance.':'Here’s where you stand.'}</h1>
-          <p>Track consistency, accuracy, subject mastery and the areas that deserve your next hour.</p>
-          <div className="actions">
-            <button className="primary" onClick={onPractice}>Practice next <Icon n="arrow"/></button>
-            <button className="secondary" onClick={()=>document.getElementById('progress-details')?.scrollIntoView({behavior:'smooth',block:'start'})}>See details</button>
-          </div>
-        </article>
-        <article className="pf-card readiness">
-          <b>Overall question accuracy</b>
-          <div className="ring" style={{'--readiness':accuracy} as CSSProperties}><span><strong>{accuracy}%</strong><small>ACCURACY</small></span></div>
-          <small>{correct} correct out of {total} attempted</small>
-        </article>
-      </section>
-      <section className="stats">
-        {[
-          ['Questions',total,'✓','answered in this period'],
-          ['Accuracy',accuracy+'%','◎',correct+' correct answers'],
-          ['Study rhythm',streak+' days','♨',activeDays+' active days tracked'],
-          ['Target score',target,'♕','NEET target out of 720']
-        ].map(([t,v,i,s])=><article className="pf-card stat" key={String(t)}><div><span>{t}</span><i>{i}</i></div><strong>{v}</strong><small>{s}</small></article>)}
-      </section>
-      <section className="grid" id="progress-details">
-        <article className="pf-card panel">
-          <div className="head"><div><h2>Performance trend</h2><small>Recent practice scores · actual marks (+4 / −1)</small></div><em>{tests.length?'LIVE':'NO TESTS'}</em></div>
-          <div className="bars">{[...tests].reverse().map((x,i)=><span key={i} title={x.title + ': ' + x.marks + ' marks'} style={{height:Math.max(8,x.percent)+'%'}} />)}</div>
-          {!tests.length&&<div className="pf-empty">Complete a practice set to build your performance trend.</div>}
-        </article>
-        <article className="pf-card panel">
-          <div className="head"><div><h2>Subject mastery</h2><small>Accuracy by subject</small></div></div>
-          <div className="subjects">{subject.map(x=><div className="sub" key={x.s}><div><b>{x.s}</b><strong>{x.p}%</strong></div><div className="track"><i style={{width:x.p+'%'}}/></div><small>{x.n} attempted</small></div>)}</div>
-        </article>
-      </section>
-      <section className="grid">
-        <article className="pf-card panel">
-          <div className="head"><div><h2>14-day rhythm</h2><small>Questions completed each day</small></div></div>
-          <div className="activity">{activity.map((x,i)=><div key={i}><span title={x.v+' questions'} style={{height:Math.max(4,Math.round(x.v/maxDaily*100))+'%'}}/><small>{x.label}</small></div>)}</div>
-        </article>
-        <article className="pf-card panel">
-          <div className="head"><div><h2>Study load</h2><small>What needs attention</small></div></div>
-          <div className="mini-list">
-            <div><span><Icon n="target"/> Mistake book</span><b>{mistakes.length}</b></div>
-            <div><span><Icon n="book"/> Saved questions</span><b>{saved.length}</b></div>
-            <div><span><Icon n="clock"/> Latest practice marks</span><b>{latestMarks==null?'—':latestMarks+'/'+latestMax}</b></div>
-          </div>
-          {weakest&&<div className="weak-focus">Next focus: <b>{weakest.s}</b> · {weakest.p}% accuracy</div>}
-        </article>
-      </section>
-      <section className="pf-card panel pf-history">
-        <div className="head"><div><h2>Recent practice sessions</h2><small>Scores calculated from submitted answers (+4 / −1)</small></div></div>
-        {tests.length?tests.slice(0,6).map((x,i)=><div className="pf-test-row" key={x.title+'-'+x.finishedAt+'-'+i}>
-          <div><b>{x.title}</b><small>{new Date(x.finishedAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})} · {x.correct} correct · {x.incorrect} incorrect</small></div>
-          <strong>{x.marks}<small>/ {x.total*4}</small></strong>
-        </div>):<div className="pf-empty">Your submitted practice sessions will appear here.</div>}
-      </section>
-      <section className="pf-card next">
-        <div><span className="eyebrow">NEXT BEST MOVE</span><h2>{weakest?'Give '+weakest.s+' your next focused hour.':'Keep your streak alive.'}</h2><p>{latestMarks!=null?'Your latest practice set: '+latestMarks+'/'+latestMax+' marks, using the NEET +4/−1 marking scheme.':'Complete a practice session to get a useful next step.'}</p></div>
-        <button className="primary" onClick={onPractice}>Start focused practice <Icon n="arrow"/></button>
-      </section>
-    </main>
-  </div>;
-}
-const css=`*{box-sizing:border-box}.pf{position:fixed;inset:0;z-index:99999;overflow:auto;background:radial-gradient(900px 520px at 85% -10%,rgba(0,122,255,.16),transparent 65%),radial-gradient(700px 460px at 0 30%,rgba(99,91,255,.10),transparent 68%),#080b0e;color:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',Inter,system-ui,sans-serif}.pf-nav{height:78px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:0 26px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(10,14,18,.62);backdrop-filter:blur(25px) saturate(170%);-webkit-backdrop-filter:blur(25px) saturate(170%);position:sticky;top:0;z-index:3}.pf-nav>div{text-align:center}.pf-nav b{display:block;font-size:16px}.pf-nav small{display:block;color:#8e999f;font-size:10px;margin-top:3px}.pf-round{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);color:#eef3f7}.pf-wrap{width:min(1180px,calc(100% - 40px));margin:auto;padding:28px 0 100px}.pf-range{display:flex;width:max-content;padding:4px;border-radius:14px;background:rgba(255,255,255,.055);margin-bottom:18px}.pf-range button{border:0;background:transparent;color:#87929a;padding:9px 15px;border-radius:10px;font-weight:700;font-size:11px}.pf-range button.on{background:rgba(255,255,255,.12);color:#fff}.pf-hero{display:grid;grid-template-columns:1.55fr .75fr;gap:16px}.pf-card{border:1px solid rgba(255,255,255,.12);background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.035));box-shadow:inset 0 1px rgba(255,255,255,.08),0 24px 70px rgba(0,0,0,.20);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border-radius:28px}.pf-hello{min-height:325px;padding:42px}.eyebrow{font-size:10px;letter-spacing:.18em;color:#63b8ff;font-weight:800}.pf-hello h1{font-size:clamp(42px,5vw,67px);line-height:.94;letter-spacing:-4px;margin:14px 0}.pf-hello p{color:#a6b1b8;max-width:680px;line-height:1.55;font-size:14px}.actions{display:flex;gap:10px;margin-top:24px}.primary,.secondary{border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:13px 17px;font-weight:750}.primary{background:#0a84ff;color:#fff;border-color:transparent;box-shadow:0 14px 30px rgba(10,132,255,.25)}.secondary{background:rgba(255,255,255,.065);color:#fff}.readiness{min-height:325px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center}.readiness>b{font-size:12px;color:#a8b2b8}.ring{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#5b8cff calc(var(--readiness,70)*1%),rgba(255,255,255,.10) 0);position:relative}.ring:before{content:'';position:absolute;inset:9px;border-radius:50%;background:#11202a}.ring span{position:relative;z-index:1}.ring strong{display:block;font-size:36px;letter-spacing:-2px}.ring small,.readiness>small{color:#8f999f;font-size:9px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}.stat{min-height:135px;padding:19px}.stat>div{display:flex;justify-content:space-between;align-items:center;color:#9da7ad;font-size:10px;font-weight:700}.stat i{width:32px;height:32px;border-radius:11px;background:rgba(10,132,255,.10);display:grid;place-items:center;color:#72bbff;font-style:normal}.stat strong{display:block;font-size:31px;letter-spacing:-1.5px;margin:15px 0 3px}.stat small{color:#8d989e;font-size:9px}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-bottom:14px}.panel{min-height:290px;padding:26px}.head{display:flex;justify-content:space-between}.head h2{font-size:19px;margin:0;letter-spacing:-.5px}.head small{display:block;color:#89949b;font-size:10px;margin-top:4px}.head em{font-style:normal;font-size:9px;padding:6px 8px;border-radius:9px;background:rgba(0,122,255,.13);color:#74bdff}.bars{height:205px;display:flex;align-items:flex-end;gap:10px;padding-top:25px}.bars span{flex:1;min-width:14px;border-radius:9px 9px 4px 4px;background:linear-gradient(180deg,#64b8ff,#087dff);box-shadow:0 8px 25px rgba(10,132,255,.16)}.subjects{display:grid;gap:18px;margin-top:24px}.sub>div:first-child{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px}.track{height:7px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden}.track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#58d0c0,#5b9cff)}.activity{height:205px;display:flex;gap:8px;align-items:flex-end;padding-top:25px}.activity>div{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}.activity span{width:100%;max-width:28px;border-radius:9px 9px 4px 4px;background:linear-gradient(180deg,#6fb8ff,rgba(10,132,255,.45))}.activity small{font-size:9px;color:#778188}.mini-list{margin-top:22px;display:grid;gap:10px}.mini-list div{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07)}.mini-list span{display:flex;gap:10px;align-items:center;color:#aeb8bd;font-size:11px}.mini-list span span{color:#62b5ff}.mini-list b{font-size:15px}.next{padding:26px;display:flex;justify-content:space-between;align-items:center;gap:20px}.next h2{margin:8px 0 5px;font-size:25px;letter-spacing:-1px}.next p{margin:0;color:#8e999f;font-size:11px}@media(max-width:900px){.pf-wrap{width:calc(100% - 24px)}.pf-hero,.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.next{display:block}.next .primary{margin-top:18px}}@media(max-width:560px){.pf-nav{padding:0 14px;height:70px}.pf-wrap{width:calc(100% - 16px);padding-top:18px}.pf-hello{padding:25px;min-height:280px}.pf-hello h1{font-size:42px;letter-spacing:-2.8px}.readiness{min-height:260px}.ring{width:135px;height:135px}.stat{min-height:110px;padding:15px}.stat strong{font-size:27px}.panel{padding:19px}.next{padding:22px}.next h2{font-size:22px}}
-/* Progress page: normal document flow, a single browser scrollbar, and lightweight light UI. */
-html:has(.pf), body:has(.pf), body:has(.pf) #root {
-  height:auto !important;
-  min-height:100% !important;
-  max-height:none !important;
-  overflow-x:hidden !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch;
-}
-body:has(.pf) { margin:0 !important; }
-body:has(.pf) #root { min-height:100dvh !important; }
-.pf {
-  position:relative !important;
-  inset:auto !important;
-  z-index:auto !important;
-  width:100% !important;
-  min-height:100dvh !important;
-  height:auto !important;
-  max-height:none !important;
-  overflow:visible !important;
-  background:#f5f7f8 !important;
-  color:#172126 !important;
-}
-.pf-nav {
-  position:sticky !important;
-  top:0 !important;
-  z-index:10 !important;
-  height:70px !important;
-  background:rgba(255,255,255,.96) !important;
-  border-bottom:1px solid #e5eaed !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-.pf-nav b { color:#172126 !important; }
-.pf-nav small,.pf-card small,.pf-hello p,.readiness>b,.readiness>small,
-.stat>div,.stat small,.head small,.activity small,.mini-list span,.next p {
-  color:#68777e !important;
-}
-.pf-round,.pf-range,.pf-range button.on,.secondary,.mini-list div {
-  background:#fff !important;
-  color:#25343b !important;
-  border-color:#e2e8eb !important;
-}
-.pf-range { border:1px solid #e5eaed; }
-.pf-range button { color:#68777e !important; }
-.pf-range button.on { background:#eaf2ff !important; color:#1769c2 !important; }
-.pf-card {
-  background:#fff !important;
-  border:1px solid #e4e9ec !important;
-  box-shadow:none !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  color:#172126 !important;
-}
-.pf-hello h1,.stat strong,.head h2,.next h2,.mini-list b { color:#172126 !important; }
-.stat i { background:#edf5ff !important; color:#2878ce !important; }
-.ring:before { background:#fff !important; }
-.ring { background:conic-gradient(#4388ed 0 70%,#e8edf0 70% 100%) !important; }
-.track { background:#edf0f2 !important; }
-.mini-list div { border-color:#e8edef !important; }
-.bars span,.activity span { box-shadow:none !important; }
-.pf .primary { box-shadow:none !important; }
-@media(prefers-reduced-motion:reduce) {
-  .pf *, .pf *::before, .pf *::after { animation:none !important; transition:none !important; }
-}
-.pf-demo-note{display:inline-flex;align-items:center;margin:0 0 16px;padding:8px 12px;border-radius:999px;background:#fff7e6;color:#805b16;border:1px solid #f0dfb7;font-size:10px;font-weight:800;letter-spacing:.06em}
-.app.progress-mode>.top-nav,.app.progress-mode>.mobile-bottom{display:none!important}
 
-.pf .bars { align-items:stretch; }
-.pf .bars span { align-self:flex-end; }
-.pf .ring { background:conic-gradient(#4388ed calc(var(--readiness,0)*1%),#e8edf0 0) !important; }
-.pf .pf-nav-spark { display:grid;place-items:center; }
-.pf .sub>small { display:block;color:#68777e;font-size:9px;margin-top:5px; }
-.pf .pf-history { margin-bottom:14px; }
-.pf-test-row { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #e8edef; }
-.pf-test-row:last-child { border-bottom:0; }
-.pf-test-row b { display:block;color:#172126;font-size:12px; }
-.pf-test-row small { display:block;color:#68777e;font-size:9px;margin-top:4px; }
-.pf-test-row>strong { flex:none;color:#172126;font-size:17px;text-align:right; }
-.pf .weak-focus { margin-top:16px;padding:12px;border-radius:13px;background:#edf5ff;color:#526b84;font-size:10px; }
-.pf .weak-focus b { color:#1769c2; }
-.pf-empty { padding:22px 0;color:#748188;font-size:11px; }
+export default function ProgressFinal({ onClose, onPractice, target = 650 }: ProgressFinalProps) {
+  const currentScore = 315;
+  const startingScore = 230;
+  const improvement = currentScore - startingScore;
+  const remaining = Math.max(0, target - currentScore);
+  const goalPercent = target > 0 ? Math.min(100, Math.round((currentScore / target) * 100)) : 0;
+
+  return (
+    <div className="pf">
+      <style>{css}</style>
+      <header className="pf-nav">
+        <button className="pf-round" onClick={() => onClose ? onClose() : window.history.back()} aria-label="Back">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div className="pf-nav-title">
+          <b>Progress</b>
+          <small>Your preparation at a glance</small>
+        </div>
+        <span className="pf-mark" aria-hidden="true">✦</span>
+      </header>
+
+      <main className="pf-wrap">
+        <div className="pf-period"><span className="pf-live-dot" /> SCORE JOURNEY <span>15 AUG – 11 NOV 2026</span></div>
+
+        <section className="pf-hero">
+          <article className="pf-card pf-intro">
+            <span className="pf-eyebrow">YOUR PREPARATION</span>
+            <h1>A steady climb.<br /><span>Even with a few dips.</span></h1>
+            <p>You started at around 230 marks on 15 August. You’re now at about 315, an improvement of 85 marks.</p>
+            <div className="pf-actions">
+              <button className="pf-primary" onClick={onPractice}>Practice next <span aria-hidden="true">→</span></button>
+              <span className="pf-gain">+{improvement} marks since August</span>
+            </div>
+          </article>
+
+          <aside className="pf-card pf-current">
+            <div className="pf-current-top"><span>LATEST ESTIMATE</span><i>NOW</i></div>
+            <div className="pf-score"><strong>~315</strong><span>/ 720</span></div>
+            <div className="pf-target-row"><span>Target score</span><b>{target}/720</b></div>
+            <div className="pf-target-track"><i style={{ width: goalPercent + '%' }} /></div>
+            <small>About {remaining} marks to your target</small>
+          </aside>
+        </section>
+
+        <section className="pf-card pf-chart-card">
+          <div className="pf-section-head">
+            <div><span className="pf-eyebrow">AUGUST TO NOVEMBER</span><h2>Score trend</h2></div>
+            <span className="pf-chart-tag">APPROXIMATE</span>
+          </div>
+          <div className="pf-chart">
+            <svg viewBox="0 0 600 180" role="img" aria-label="An illustrative upward score trend from around 230 to around 315, with fluctuations">
+              <defs>
+                <linearGradient id="pf-area" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b91ff" stopOpacity=".25" />
+                  <stop offset="100%" stopColor="#3b91ff" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path className="pf-grid-line" d="M10 38 H590 M10 88 H590 M10 138 H590" />
+              <path className="pf-area" d="M12 137 C55 145 78 105 122 119 S183 78 225 94 S286 57 329 76 S384 43 430 58 S505 19 588 25 L588 160 L12 160 Z" />
+              <path className="pf-line" d="M12 137 C55 145 78 105 122 119 S183 78 225 94 S286 57 329 76 S384 43 430 58 S505 19 588 25" />
+              <circle className="pf-start-dot" cx="12" cy="137" r="5" />
+              <circle className="pf-end-dot" cx="588" cy="25" r="6" />
+            </svg>
+            <div className="pf-chart-labels"><span><b>≈230</b><small>15 Aug</small></span><span><b>≈315</b><small>11 Nov</small></span></div>
+          </div>
+          <p className="pf-chart-note">The middle dips show the overall up-and-down pattern, not individual recorded test scores. Your actual mock reports will replace this estimate as we add them.</p>
+        </section>
+
+        <section className="pf-card pf-reports">
+          <div className="pf-section-head pf-report-head">
+            <div><span className="pf-eyebrow">TEST PERFORMANCE</span><h2>Mock test reports</h2></div>
+            <span className="pf-report-status">READY FOR REPORTS</span>
+          </div>
+          <div className="pf-report-empty">
+            <span className="pf-report-icon" aria-hidden="true">▤</span>
+            <div>
+              <b>Your mock reports will appear here.</b>
+              <p>Share your test PDFs or screenshots later. Each report can be added with marks, subject-wise scores and weak topics.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+const css = `
+.pf{min-height:100dvh;width:100%;color:#eef3f7;background:radial-gradient(850px 440px at 84% -12%,rgba(35,122,219,.17),transparent 66%),#090d11;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app.progress-mode>.top-nav,.app.progress-mode>.mobile-bottom{display:none!important}
+.pf *{box-sizing:border-box}
+.pf-nav{height:72px;position:sticky;top:0;z-index:20;display:grid;grid-template-columns:42px 1fr 42px;align-items:center;padding:0 28px;background:rgba(10,15,20,.94);border-bottom:1px solid #202b34}
+.pf-round{width:40px;height:40px;border-radius:50%;border:1px solid #293640;background:#121a21;color:#dce6ed;font-size:24px;line-height:1;cursor:pointer}
+.pf-nav-title{text-align:center}.pf-nav-title b{display:block;font-size:15px;letter-spacing:-.2px}.pf-nav-title small{display:block;margin-top:3px;color:#81909a;font-size:10px}
+.pf-mark{width:40px;height:40px;display:grid;place-items:center;border:1px solid #293640;border-radius:50%;color:#70b3ff;background:#121a21;font-size:18px}
+.pf-wrap{width:min(1060px,calc(100% - 40px));margin:0 auto;padding:30px 0 72px}
+.pf-period{display:flex;align-items:center;gap:9px;margin:0 0 15px;color:#a8b8c3;font-size:10px;font-weight:850;letter-spacing:.13em}
+.pf-period>span:last-child{margin-left:5px;color:#71818d;font-size:9px;letter-spacing:.08em}
+.pf-live-dot{width:7px;height:7px;border-radius:50%;background:#3b98ff;box-shadow:0 0 0 4px rgba(59,152,255,.12)}
+.pf-hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.72fr);gap:14px}
+.pf-card{background:#111920;border:1px solid #25323c;border-radius:22px}
+.pf-intro{padding:34px 36px;min-height:270px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.pf-eyebrow{color:#69b2ff;font-size:9px;font-weight:900;letter-spacing:.16em}
+.pf-intro h1{margin:14px 0 10px;color:#f3f7fa;font-size:clamp(34px,4.5vw,53px);line-height:1.02;letter-spacing:-2.7px}
+.pf-intro h1 span{color:#9aaab6}
+.pf-intro p{max-width:570px;margin:0;color:#9aa8b2;font-size:13px;line-height:1.7}
+.pf-actions{display:flex;align-items:center;gap:17px;margin-top:22px;flex-wrap:wrap}
+.pf-primary{border:0;border-radius:12px;padding:12px 16px;background:#1685f8;color:#fff;font-size:12px;font-weight:800;cursor:pointer}
+.pf-primary span{margin-left:7px}.pf-primary:hover{background:#3196ff}
+.pf-gain{color:#72c9a5;font-size:11px;font-weight:750}
+.pf-current{padding:24px 25px;display:flex;flex-direction:column;justify-content:center}
+.pf-current-top{display:flex;align-items:center;justify-content:space-between;color:#8ea0ad;font-size:9px;font-weight:850;letter-spacing:.13em}
+.pf-current-top i{font-style:normal;padding:5px 8px;border-radius:7px;background:rgba(47,190,137,.10);color:#69d6a8;font-size:8px}
+.pf-score{display:flex;align-items:baseline;gap:8px;margin:13px 0 20px}
+.pf-score strong{color:#f5f8fa;font-size:58px;line-height:1;letter-spacing:-3px}
+.pf-score span{color:#82919c;font-size:13px}
+.pf-target-row{display:flex;justify-content:space-between;align-items:center;color:#9baab4;font-size:10px}
+.pf-target-row b{color:#dfe8ee;font-size:11px}
+.pf-target-track{height:7px;margin:9px 0 8px;overflow:hidden;border-radius:20px;background:#26323b}
+.pf-target-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#267be5,#55b6ff)}
+.pf-current>small{color:#778894;font-size:9px}
+.pf-chart-card,.pf-reports{margin-top:14px;padding:24px 27px}
+.pf-section-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pf-section-head h2{margin:6px 0 0;color:#eff4f7;font-size:19px;letter-spacing:-.6px}
+.pf-chart-tag,.pf-report-status{padding:7px 9px;border:1px solid #2a3a48;border-radius:8px;color:#8ea6b8;font-size:8px;font-weight:850;letter-spacing:.1em}
+.pf-chart{margin-top:12px}
+.pf-chart svg{display:block;width:100%;height:180px;overflow:visible}
+.pf-grid-line{fill:none;stroke:#25313a;stroke-width:1;stroke-dasharray:3 7}
+.pf-area{fill:url(#pf-area)}
+.pf-line{fill:none;stroke:#4ca3ff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.pf-start-dot{fill:#121b22;stroke:#77baff;stroke-width:3}
+.pf-end-dot{fill:#4ca3ff;stroke:#d9edff;stroke-width:3}
+.pf-chart-labels{display:flex;justify-content:space-between;margin-top:0}
+.pf-chart-labels span{display:flex;flex-direction:column;gap:3px}
+.pf-chart-labels b{color:#e7f1f8;font-size:13px}
+.pf-chart-labels small{color:#7d8c97;font-size:9px}
+.pf-chart-note{margin:16px 0 0;padding-top:13px;border-top:1px solid #25323c;color:#7f909b;font-size:10px;line-height:1.6}
+.pf-report-status{color:#76cda7;border-color:rgba(81,194,145,.25);background:rgba(81,194,145,.07)}
+.pf-report-empty{display:flex;align-items:center;gap:15px;margin-top:19px;padding:17px;border:1px dashed #344550;border-radius:15px;background:#0e151b}
+.pf-report-icon{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:12px;background:#172938;color:#78baff;font-size:19px}
+.pf-report-empty b{display:block;color:#e2ebf1;font-size:12px}
+.pf-report-empty p{max-width:690px;margin:5px 0 0;color:#82929d;font-size:10px;line-height:1.6}
+@media(max-width:760px){
+ .pf-nav{height:64px;padding:0 14px}
+ .pf-wrap{width:calc(100% - 24px);padding:20px 0 48px}
+ .pf-hero{grid-template-columns:1fr}
+ .pf-intro{min-height:245px;padding:25px 22px}
+ .pf-intro h1{font-size:37px;letter-spacing:-1.9px}
+ .pf-current{padding:20px 22px}
+ .pf-score{margin:10px 0 16px}
+ .pf-chart-card,.pf-reports{padding:19px 17px}
+ .pf-chart svg{height:145px}
+ .pf-report-empty{align-items:flex-start;padding:14px}
+}
+@media(max-width:420px){
+ .pf-period{font-size:9px;gap:7px}
+ .pf-period>span:last-child{font-size:8px}
+ .pf-intro h1{font-size:33px}
+ .pf-gain{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.pf *{scroll-behavior:auto!important;transition:none!important}}
 `;
