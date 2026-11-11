@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import MockQuestionAnalysis from './MockQuestionAnalysis';
 
 export type MockSeriesPaper = {
   id: string;
   title: string;
   date: string;
   dateLabel: string;
-  onlineOnly?: boolean;
   questionIds: string[];
 };
 
@@ -25,13 +25,12 @@ type MockSeriesScore = {
   biology_correct: number;
   biology_incorrect: number;
   biology_unanswered: number;
-  score_status: 'provisional' | 'verified';
+  score_status: 'estimated' | 'verified';
 };
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
   { id: 'neet-level-2026-08-09', title: 'NEET Level Test – 09-Aug', date: '2026-08-09', dateLabel: '9 Aug 2026', questionIds: [] },
   { id: 'neet-level-2026-09-06', title: 'NEET Level Test – 06-Sep', date: '2026-09-06', dateLabel: '6 Sep 2026', questionIds: [] },
-  { id: 'neet-level-2026-09-23', title: 'NEET Level Test – 23-Sep', date: '2026-09-23', dateLabel: '23 Sep 2026', onlineOnly: true, questionIds: [] },
   { id: 'neet-level-2026-09-27', title: 'NEET Level Test – 27-Sep', date: '2026-09-27', dateLabel: '27 Sep 2026', questionIds: [] },
   { id: 'neet-level-2026-10-11', title: 'NEET Level Test – 11-Oct', date: '2026-10-11', dateLabel: '11 Oct 2026', questionIds: [] },
   { id: 'neet-level-2026-10-25', title: 'NEET Level Test – 25-Oct', date: '2026-10-25', dateLabel: '25 Oct 2026', questionIds: [] },
@@ -46,6 +45,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
   const [scores, setScores] = useState<Record<string, MockSeriesScore>>({});
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoreLoadFailed, setScoreLoadFailed] = useState(false);
+  const [activeAnalysis, setActiveAnalysis] = useState<MockSeriesPaper | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -66,7 +66,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
 
       if (!active) return;
       if (error) {
-        console.error('Could not load provisional mock scores', error);
+        console.error('Could not load mock scores', error);
         setScoreLoadFailed(true);
         setScoresLoading(false);
         return;
@@ -112,19 +112,19 @@ export default function MockTestSeries({ onAttempt }: Props) {
         <div>
           <span className="section-kicker">YOUR COACHING TEST SERIES</span>
           <h2>Your mock test series.</h2>
-          <p>Six papers have provisional subject-wise marks. Upload the PDFs and answer keys later to replace these estimates with verified results.</p>
+          <p>Six uploaded papers, with a subject-wise scorecard and question review panel.</p>
         </div>
-        <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} MARKED`}</span>
+        <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} / 6 SCORED`}</span>
       </div>
 
       <div className="mock-series-note">
         <span aria-hidden="true">◎</span>
-        <p><b>Provisional marks, not verified results.</b> Each score uses the NEET marking scheme: +4 for correct, −1 for incorrect and 0 for unanswered. Subject-wise counts are stored in Supabase and can be recalculated after the PDFs and answer keys are uploaded.</p>
+        <p><b>Estimated scorecards.</b> The PDFs contain the question papers and OMR-sheet link, not marked responses or an answer key. These marks are estimated from the requested totals and a varied subject split, not verified exam attempts. NEET calculation: +4 correct, −1 incorrect, 0 unanswered.</p>
       </div>
 
       {scoreLoadFailed && (
         <div className="mock-series-error" role="status">
-          Saved marks could not be loaded. Check the Supabase table access and try refreshing the page.
+          Saved marks could not be loaded. Check Supabase access and refresh the page.
         </div>
       )}
 
@@ -147,11 +147,10 @@ export default function MockTestSeries({ onAttempt }: Props) {
               <h3>{paper.title}</h3>
               <div className="mock-series-date">
                 <span aria-hidden="true">◷</span>
-                <span>Live on: {paper.dateLabel}, 01:30 pm</span>
+                <span>Test date: {paper.dateLabel}</span>
               </div>
-              {paper.onlineOnly && <span className="mock-series-online">ONLY ONLINE</span>}
               <div className="mock-series-goal">
-                <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'PROVISIONAL SCORE') : 'SCORE PENDING'}</span>
+                <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'ESTIMATED SCORE') : 'SCORE PENDING'}</span>
                 <b>{score ? `${score.total_score} / 720` : '—'}</b>
               </div>
               {subjectBreakdown.length > 0 && (
@@ -162,23 +161,40 @@ export default function MockTestSeries({ onAttempt }: Props) {
                         <small>{subject.label}</small>
                         <strong>{subject.marks}</strong>
                       </div>
-                      <span>{subject.correct}✓ · {subject.incorrect}✕ · {subject.unanswered}–</span>
+                      <span>{subject.correct} correct · {subject.incorrect} wrong · {subject.unanswered} blank</span>
                     </div>
                   ))}
                 </div>
+              )}
+              {score && (
+                <button
+                  className="mock-series-analysis"
+                  onClick={() => setActiveAnalysis(current => current?.id === paper.id ? null : paper)}
+                >
+                  {activeAnalysis?.id === paper.id ? 'Close analysis' : 'Analyse in depth →'}
+                </button>
               )}
               <button
                 className="mock-series-attempt"
                 disabled={!ready}
                 onClick={() => onAttempt(paper)}
               >
-                {ready ? 'Attempt paper →' : 'Attempt paper · PDF pending'}
+                {ready ? 'Attempt paper →' : 'Attempt paper · PDF mapping pending'}
               </button>
-              <small className="mock-series-foot">{ready ? 'Opens the timed test interface' : 'Question paper and answer key not added yet'}</small>
+              <small className="mock-series-foot">{ready ? 'Opens the timed test interface' : 'Question text and answer key are not mapped in the app yet'}</small>
             </article>
           );
         })}
       </div>
+
+      {activeAnalysis && (
+        <MockQuestionAnalysis
+          key={activeAnalysis.id}
+          mockKey={activeAnalysis.id}
+          mockTitle={activeAnalysis.title}
+          onClose={() => setActiveAnalysis(null)}
+        />
+      )}
     </section>
   );
 }
@@ -203,7 +219,6 @@ const css = `
 .mock-series-card h3{margin:13px 0 7px;color:var(--text);font-size:14px;letter-spacing:-.25px}
 .mock-series-date{display:flex;gap:7px;align-items:center;color:var(--app-muted);font-size:9px}
 .mock-series-date span:first-child{color:var(--apple-blue);font-size:13px}
-.mock-series-online{display:inline-flex;margin-top:9px;padding:5px 7px;border-radius:6px;background:rgba(10,132,255,.10);color:#67b4ff;font-size:7px;font-weight:900;letter-spacing:.09em}
 .mock-series-goal{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--app-line)}
 .mock-series-goal span{color:var(--app-muted);font-size:7px;font-weight:900;letter-spacing:.09em}
 .mock-series-goal b{color:var(--text);font-size:12px}
@@ -212,8 +227,9 @@ const css = `
 .mock-series-subject-head{display:flex;align-items:center;justify-content:space-between;gap:3px}
 .mock-series-subject-head small{color:var(--app-muted);font-size:7px;font-weight:900;letter-spacing:.06em}
 .mock-series-subject-head strong{color:var(--text);font-size:11px}
-.mock-series-subject>span{display:block;margin-top:5px;color:var(--app-muted);font-size:7px;white-space:nowrap}
-.mock-series-attempt{width:100%;min-height:39px;margin-top:13px;border:0;border-radius:10px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}
+.mock-series-subject>span{display:block;margin-top:5px;color:var(--app-muted);font-size:7px;line-height:1.4}
+.mock-series-analysis{width:100%;min-height:37px;margin-top:12px;border:1px solid var(--app-line);border-radius:10px;background:transparent;color:var(--text);font-size:10px;font-weight:850;cursor:pointer}
+.mock-series-attempt{width:100%;min-height:39px;margin-top:9px;border:0;border-radius:10px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}
 .mock-series-attempt:disabled{background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--app-muted);cursor:not-allowed;border:1px solid var(--app-line)}
 .mock-series-foot{display:block;margin-top:7px;color:var(--app-muted);font-size:8px;line-height:1.45}
 @media(max-width:900px){.mock-series-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
