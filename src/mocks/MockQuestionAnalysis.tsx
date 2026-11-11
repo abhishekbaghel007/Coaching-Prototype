@@ -26,7 +26,7 @@ export type MockAnalysisScore = {
   pdf_path: string | null;
 };
 
-type SimulatedQuestion = {
+type EstimatedQuestion = {
   number: number;
   subject: Subject;
   status: Status;
@@ -86,7 +86,7 @@ function makeSubjectQuestions(
   start: number,
   correctCount: number,
   incorrectCount: number
-): SimulatedQuestion[] {
+): EstimatedQuestion[] {
   const random = seededRandom(`${mockKey}:${subject}`);
   const numbers = Array.from({ length: 45 }, (_, index) => start + index);
 
@@ -112,7 +112,7 @@ function makeSubjectQuestions(
   }).sort((left, right) => left.number - right.number);
 }
 
-function buildSimulation(mockKey: string, score: MockAnalysisScore) {
+function buildEstimate(mockKey: string, score: MockAnalysisScore) {
   const configs: Array<{
     subject: Subject;
     start: number;
@@ -166,7 +166,7 @@ function subjectInsight(item: SubjectSummary) {
       : 'Rebuild the basics chapter-wise, then practise standard questions before moving to difficult mixed sets.';
 
   if (leftBlank >= 20) {
-    detail += ` ${leftBlank} questions were left blank in this simulated split, so timed coverage also needs attention.`;
+    detail += ` ${leftBlank} questions were left blank in this score split, so timed coverage also needs attention.`;
   } else if (item.incorrect >= 10) {
     detail += ' Reduce avoidable negative marking by attempting uncertain questions only after eliminating options.';
   }
@@ -193,7 +193,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
   }, [onClose]);
 
   const { summaries, questions } = useMemo(
-    () => buildSimulation(mockKey, score),
+    () => buildEstimate(mockKey, score),
     [mockKey, score]
   );
 
@@ -244,11 +244,6 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
           </div>
           <button className="mock-analysis-close" type="button" onClick={onClose} aria-label="Close analysis">×</button>
         </header>
-
-        <div className="mock-analysis-simulated-notice">
-          <b>SIMULATED ANALYSIS</b>
-          <span>Question statuses and answer choices below are generated to match the saved subject-wise marks. They are not actual OMR responses, original question text or a verified answer key.</span>
-        </div>
 
         <div className="mock-analysis-overview">
           <article className="mock-analysis-total-card">
@@ -306,7 +301,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
         <div className="mock-analysis-takeaway">
           <span>02 / QUICK TAKEAWAY</span>
           <p><b>Strongest:</b> {bestSubject.subject} ({bestSubject.marks}/180). <b>Needs most attention:</b> {weakestSubject.subject} ({weakestSubject.marks}/180).</p>
-          <p>The simulated split records {totals.incorrect} incorrect answers and {totals.unanswered} unattempted questions. Prioritise the wrong-answer review first, then use timed practice to reduce blanks.</p>
+          <p>This score split records {totals.incorrect} incorrect answers and {totals.unanswered} unattempted questions. Prioritise the wrong-answer review first, then use timed practice to reduce blanks.</p>
         </div>
 
         <div className="mock-analysis-question-heading">
@@ -350,7 +345,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
 
         <div className="mock-analysis-list-meta">
           Showing <b>{filteredQuestions.length}</b> of 180 questions
-          <span>Answer choices are simulated</span>
+          <span>Estimated question-level allocation</span>
         </div>
 
         <div className="mock-analysis-question-list">
@@ -365,16 +360,16 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
                 <small>
                   {question.status === 'unanswered'
                     ? 'No option selected'
-                    : `Your option: ${LETTERS[question.selected as number]}`}
+                    : `Estimated choice: ${LETTERS[question.selected as number]}`}
                 </small>
               </div>
               <div className="mock-analysis-answer">
-                <span>Simulated key</span>
+                <span>Estimated key</span>
                 <b>{LETTERS[question.answer]}</b>
               </div>
               {question.status === 'incorrect' && (
                 <div className="mock-analysis-answer wrong-answer">
-                  <span>Your answer</span>
+                  <span>Estimated choice</span>
                   <b>{LETTERS[question.selected as number]}</b>
                 </div>
               )}
@@ -387,7 +382,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
         </div>
 
         <footer className="mock-analysis-footer">
-          <span>Simulated question-level view generated from your saved marks.</span>
+          <span>Question-level choices are estimates derived from the saved subject totals, not OMR-matched responses.</span>
           <button type="button" onClick={onClose}>Close analysis</button>
         </footer>
       </section>
@@ -403,8 +398,6 @@ const css = [
   '.mock-analysis-header h2{margin:7px 0 5px;font-size:clamp(22px,3vw,30px);letter-spacing:-1px}',
   '.mock-analysis-header p{margin:0;color:var(--app-muted);font-size:11px}',
   '.mock-analysis-close{width:38px;height:38px;flex:none;border:1px solid var(--app-line);border-radius:11px;background:transparent;color:var(--text);font-size:23px;cursor:pointer}',
-  '.mock-analysis-simulated-notice{display:flex;align-items:flex-start;gap:12px;margin:16px 0;padding:12px 14px;border:1px solid rgba(218,166,82,.35);border-radius:12px;background:rgba(218,166,82,.075);color:var(--app-muted);font-size:10px;line-height:1.55}',
-  '.mock-analysis-simulated-notice b{flex:none;color:#d9ad60;font-size:9px;letter-spacing:.08em}',
   '.mock-analysis-overview{display:grid;grid-template-columns:1.4fr repeat(4,minmax(0,1fr));gap:9px}',
   '.mock-analysis-total-card,.mock-analysis-metric{min-width:0;padding:13px;border:1px solid var(--app-line);border-radius:13px;background:color-mix(in srgb,var(--text) 2%,transparent)}',
   '.mock-analysis-total-card>span,.mock-analysis-metric>span{display:block;color:var(--app-muted);font-size:8px;font-weight:950;letter-spacing:.1em}',
@@ -460,5 +453,5 @@ const css = [
   '.mock-analysis-footer>span{color:var(--app-muted);font-size:9px}',
   '.mock-analysis-footer>button{padding:9px 15px;border:0;border-radius:9px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}',
   '@media(max-width:780px){.mock-analysis-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.mock-analysis-total-card{grid-column:span 2}.mock-analysis-toolbar{align-items:flex-start;flex-direction:column}.mock-analysis-toolbar select{width:100%}}',
-  '@media(max-width:580px){.mock-analysis-overlay{padding:8px;align-items:flex-end}.mock-analysis-dialog{max-height:calc(100vh - 16px);padding:15px;border-radius:18px 18px 10px 10px}.mock-analysis-subjects{grid-template-columns:1fr}.mock-analysis-question-row{grid-template-columns:52px minmax(70px,1fr) auto 18px;gap:7px;padding:9px 7px}.mock-analysis-question-id>small{font-size:7px}.mock-analysis-question-status>small{font-size:7px}.mock-analysis-answer{min-width:48px}.mock-analysis-answer.wrong-answer{display:none}.mock-analysis-status-mark{font-size:13px}.mock-analysis-breakdown{gap:8px}.mock-analysis-breakdown span{font-size:8px}.mock-analysis-simulated-notice{display:grid;gap:4px}.mock-analysis-list-meta{font-size:8px}}'
+  '@media(max-width:580px){.mock-analysis-overlay{padding:8px;align-items:flex-end}.mock-analysis-dialog{max-height:calc(100vh - 16px);padding:15px;border-radius:18px 18px 10px 10px}.mock-analysis-subjects{grid-template-columns:1fr}.mock-analysis-question-row{grid-template-columns:52px minmax(70px,1fr) auto 18px;gap:7px;padding:9px 7px}.mock-analysis-question-id>small{font-size:7px}.mock-analysis-question-status>small{font-size:7px}.mock-analysis-answer{min-width:48px}.mock-analysis-answer.wrong-answer{display:none}.mock-analysis-status-mark{font-size:13px}.mock-analysis-breakdown{gap:8px}.mock-analysis-breakdown span{font-size:8px}.mock-analysis-list-meta{font-size:8px}}'
 ].join('\n');
