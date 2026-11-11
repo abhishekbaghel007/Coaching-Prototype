@@ -516,6 +516,19 @@ export default function StudentExperience(props: Props) {
     .v7-menu-icon{box-shadow:inset 0 1px rgba(255,255,255,.30),inset 0 -12px 22px rgba(0,0,0,.15),0 12px 30px color-mix(in srgb,var(--tone) 25%,transparent)!important}
     @media(max-width:700px){.v7-explore-inner{padding-top:calc(18px + env(safe-area-inset-top))!important;padding-bottom:calc(36px + env(safe-area-inset-bottom))!important}.v7-explore-top{margin-bottom:28px!important}.v7-explore-top h2{font-size:32px!important;letter-spacing:-1.4px!important}.v7-menu-card{min-height:122px!important}}
 
+
+    /* Student homepage header visibility and normal document flow. */
+    .student-v7{display:block!important;position:relative!important;height:auto!important;max-height:none!important;overflow:visible!important;isolation:isolate}
+    .student-v7 .v7-top{display:flex!important;visibility:visible!important;opacity:1!important;min-height:64px!important;height:auto!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;position:relative!important;top:auto!important;z-index:5!important;overflow:visible!important}
+    .student-v7 .v7-top .v7-brand,.student-v7 .v7-top .v7-actions{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important}
+    .student-v7 .v7-top .v7-brand-name,.student-v7 .v7-top .v7-round{visibility:visible!important;opacity:1!important}
+    .student-v7 .v7-welcome{position:relative!important;display:block!important;clear:both!important;margin-top:0!important;padding-top:38px!important}
+    .student-v7 .v7-welcome h1{max-width:100%;overflow-wrap:anywhere}
+    @media(max-width:760px){
+      .student-v7 .v7-top{position:sticky!important;top:0!important;background:rgba(8,13,20,.88)!important;backdrop-filter:blur(20px)!important}
+      .student-v7 .v7-welcome{padding-top:28px!important}
+    }
+
   `;
 
   return (
