@@ -96,7 +96,8 @@ function csvCell(value: string | number) {
 export default function ProgressFinal({ onClose, onPractice, target = 650 }: ProgressFinalProps) {
   const [reports, setReports] = useState<MockReport[]>(readReports);
   const [currentScore, setCurrentScore] = useState(() => {
-    const value = Number(localStorage.getItem(ESTIMATE_KEY));
+    const stored = localStorage.getItem(ESTIMATE_KEY);
+    const value = stored === null ? 315 : Number(stored);
     return Number.isInteger(value) && value >= 0 && value <= 720 ? value : 315;
   });
   const [estimateEditing, setEstimateEditing] = useState(false);
