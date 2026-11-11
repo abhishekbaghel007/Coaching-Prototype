@@ -194,7 +194,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
         <div>
           <span className="section-kicker">QUESTION-WISE REVIEW</span>
           <h3>{mockTitle}</h3>
-          <p>Text-only review with separate Physics, Chemistry, Botany and Zoology analysis.</p>
+          <p>Text-only review with four separate subjects. Choose the option you remember marking; checked answer keys are shown when available.</p>
         </div>
         <button className="mock-analysis-close" onClick={onClose} aria-label="Close analysis">×</button>
       </div>
@@ -212,7 +212,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
       ) : userId && !loadError && questions.length === 0 ? (
         <div className="mock-analysis-empty">
           <b>Question bank and answer key are not imported yet.</b>
-          <span>The uploaded PDFs provide the papers and OMR-sheet links, but they do not contain marked responses or an answer key. I will not invent question numbers or claim they were your mistakes. Once each text question and its checked answer key are loaded, this panel can compare your selected option and show the exact wrong question.</span>
+          <span>The uploaded PDFs provide the question papers and OMR-sheet links, but not your marked options. I will not invent which questions you personally got wrong. The question text and checked key must be imported first; then record the option you remember selecting for each question. The panel will compare it with the key and show the exact incorrect questions.</span>
         </div>
       ) : questions.length > 0 ? (
         <>
