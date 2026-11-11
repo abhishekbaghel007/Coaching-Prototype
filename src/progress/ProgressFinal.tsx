@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import demoProgress from '../data/demo-progress.json';
 import { QUESTIONS } from '../data/questions';
 
 type Answer={question_id:string;is_correct:boolean;subject:'Physics'|'Chemistry'|'Biology';answeredAt:number};
@@ -12,14 +13,10 @@ type ProgressFinalProps = { onClose?: () => void; website?: boolean; sampleDemo?
 
 function buildSampleAnswers(): Answer[] {
   const now = Date.now();
-  const plan = [
-    { subject: 'Physics' as const, total: 60, correct: 21 },
-    { subject: 'Chemistry' as const, total: 60, correct: 21 },
-    { subject: 'Biology' as const, total: 180, correct: 126 },
-  ];
-  return plan.flatMap(group => Array.from({ length: group.total }, (_, index) => ({
+  const plan = demoProgress.subjects;
+  return plan.flatMap(group => Array.from({ length: group.attempted }, (_, index) => ({
     question_id: 'sample-' + group.subject.toLowerCase() + '-' + (index + 1),
-    subject: group.subject, is_correct: index < group.correct,
+    subject: group.name as Answer['subject'], is_correct: index < group.correct,
     answeredAt: now - ((group.total - index) % 30) * 43200000,
   })));
 }
@@ -29,7 +26,7 @@ function buildSampleDaily(): Record<string, number> {
   for (let offset = 0; offset < 30; offset += 1) {
     if ([1, 4, 7, 10, 14, 18, 22, 25, 28].includes(offset)) continue;
     const date = new Date(); date.setDate(date.getDate() - offset);
-    daily[day(date)] = 12 + ((offset * 7) % 19);
+    daily[day(date)] = demoProgress.dailyActivity[13 - offset] ?? 0;
   }
   return daily;
 }
@@ -49,16 +46,16 @@ function buildSampleResults(): Result[] {
 }
 export default function ProgressFinal({onClose,website=false,sampleDemo=false}:ProgressFinalProps){
  const [range,setRange]=useState<'7D'|'30D'|'ALL'>('30D');
- const answers=sampleDemo?buildSampleAnswers():read<Answer[]>('neetprep-answer-history-v1',[]); const results=sampleDemo?buildSampleResults():read<Result[]>('neetprep-results-v3',[]); const daily=sampleDemo?buildSampleDaily():read<Record<string,number>>('neetprep-daily-v3',{}); const saved=sampleDemo?Array.from({length:24},(_,i)=>'sample-saved-'+(i+1)):read<string[]>('neetprep-saved-v3',[]); const mistakes=sampleDemo?Array.from({length:18},(_,i)=>'sample-mistake-'+(i+1)):read<string[]>('neetprep-mistakes-v3',[]); const target=Number(localStorage.getItem('neetprep-target-v3')||650);
+ const answers=sampleDemo?buildSampleAnswers():read<Answer[]>('neetprep-answer-history-v1',[]); const results=sampleDemo?buildSampleResults():read<Result[]>('neetprep-results-v3',[]); const daily=sampleDemo?buildSampleDaily():read<Record<string,number>>('neetprep-daily-v3',{}); const saved=sampleDemo?Array.from({length:demoProgress.totals.savedQuestions},(_,i)=>'sample-saved-'+(i+1)):read<string[]>('neetprep-saved-v3',[]); const mistakes=sampleDemo?Array.from({length:demoProgress.totals.mistakeQuestions},(_,i)=>'sample-mistake-'+(i+1)):read<string[]>('neetprep-mistakes-v3',[]); const target=sampleDemo?demoProgress.targetMarks:Number(localStorage.getItem('neetprep-target-v3')||650);
  const cutoff=range==='ALL'?0:Date.now()-(range==='7D'?7:30)*86400000; const filtered=answers.filter(a=>a.answeredAt>=cutoff); const total=filtered.length; const correct=filtered.filter(a=>a.is_correct).length; const accuracy=total?Math.round(correct/total*100):0;
  const activeDays=Object.values(daily).filter(v=>v>0).length; const streak=useMemo(()=>{let n=0,d=new Date();while((daily[day(d)]||0)>0){n++;d.setDate(d.getDate()-1)}return n},[daily]);
  const readiness=Math.min(100,Math.round(accuracy*.55+Math.min(100,total/150*100)*.25+Math.min(100,streak/14*100)*.2));
  const subject=subjects.map(s=>{const a=filtered.filter(x=>x.subject===s),c=a.filter(x=>x.is_correct).length;return {s,n:a.length,p:a.length?Math.round(c/a.length*100):0}});
- const tests=[...results].sort((a,b)=>b.finishedAt-a.finishedAt).slice(0,5).map(r=>({title:r.title,score:score(r)})); const gap=tests.length?Math.max(0,target-tests[0].score):null;
+ const tests=sampleDemo?demoProgress.recentTests.map(r=>({title:r.title,score:r.score})).slice(0,5):[...results].sort((a,b)=>b.finishedAt-a.finishedAt).slice(0,5).map(r=>({title:r.title,score:score(r)})); const gap=tests.length?Math.max(0,target-tests[0].score):null;
  const activity=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(13-i));return {label:d.toLocaleDateString(undefined,{weekday:'narrow'}),v:daily[day(d)]||0}});
  return <div className="pf" data-website={website?'1':'0'}><style>{css}</style>
   <header className="pf-nav"><button className="pf-round" onClick={onClose||(()=>history.back())}><Icon n="back"/></button><div><b>Progress</b><small>Your preparation at a glance</small></div><button className="pf-round"><Icon n="spark"/></button></header>
-  <main className="pf-wrap">{sampleDemo&&<div className="pf-demo-note">SAMPLE PROGRESS · DEMO DATA FOR suprvirat@gmail.com</div>}<div className="pf-range">{(['7D','30D','ALL'] as const).map(x=><button className={range===x?'on':''} onClick={()=>setRange(x)} key={x}>{x==='ALL'?'All time':x}</button>)}</div>
+  <main className="pf-wrap">{sampleDemo&&<div className="pf-demo-note">SAMPLE PROGRESS · DEMO DATA ONLY</div>}<div className="pf-range">{(['7D','30D','ALL'] as const).map(x=><button className={range===x?'on':''} onClick={()=>setRange(x)} key={x}>{x==='ALL'?'All time':x}</button>)}</div>
    <section className="pf-hero"><article className="pf-card pf-hello"><span className="eyebrow">PERSONAL PREPARATION</span><h1>{website?'Your preparation, at a glance.':'Here’s where you stand.'}</h1><p>Track consistency, accuracy, subject mastery and the areas that deserve your next hour.</p><div className="actions"><button className="primary">Practice next <Icon n="arrow"/></button><button className="secondary">See details</button></div></article><article className="pf-card readiness"><b>Preparation readiness</b><div className="ring"><span><strong>{readiness}%</strong><small>READY</small></span></div><small>{readiness<50?'Build consistency first.':readiness<80?'Good momentum.':'Excellent rhythm.'}</small></article></section>
    <section className="stats">{[['Questions',total,'✓','answered in this period'],['Accuracy',accuracy+'%','◎',correct+' correct answers'],['Study rhythm',streak+' days','♨',activeDays+' active days tracked'],['Target',target,'♕',gap==null?'Keep building':'marks to go']].map(([t,v,i,s])=><article className="pf-card stat" key={String(t)}><div><span>{t}</span><i>{i}</i></div><strong>{v}</strong><small>{s}</small></article>)}</section>
    <section className="grid"><article className="pf-card panel"><div className="head"><div><h2>Performance trend</h2><small>Recent test performance</small></div><em>LIVE</em></div><div className="bars">{(tests.length?tests.map(x=>Math.min(100,Math.max(0,x.score/720*100))):[0,0,0,0,0]).map((v,i)=><span key={i} style={{height:`${Math.max(10,v)}%`}} />)}</div></article><article className="pf-card panel"><div className="head"><div><h2>Subject mastery</h2><small>Accuracy by subject</small></div></div><div className="subjects">{subject.map(x=><div className="sub" key={x.s}><div><b>{x.s}</b><strong>{x.p}%</strong></div><div className="track"><i style={{width:`${x.p}%`}}/></div></div>)}</div></article></section>
