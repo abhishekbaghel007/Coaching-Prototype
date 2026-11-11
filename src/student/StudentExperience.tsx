@@ -529,6 +529,9 @@ export default function StudentExperience(props: Props) {
       .student-v7 .v7-welcome{padding-top:28px!important}
     }
 
+    /* Remove the duplicate in-content brand bar; App owns the primary navigation. */
+    .student-v7 .v7-top { display:none !important; height:0 !important; min-height:0 !important; padding:0 !important; margin:0 !important; border:0 !important; }
+
   `;
 
   return (
