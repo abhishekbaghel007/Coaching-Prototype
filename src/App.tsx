@@ -255,7 +255,7 @@ export default function App() {
   const [results, setResults] = useState<Result[]>(() => read(STORAGE.results, []));
   const [answerHistory, setAnswerHistory] = useState<AnswerRecord[]>(() => read(STORAGE.answers, []));
   const [theme, setTheme] = useState<ThemeId>('teal');
-  const [appearance, setAppearance] = useState<Appearance>('dark');
+  const [appearance, setAppearance] = useState<Appearance>('light');
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -322,7 +322,7 @@ export default function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem(STORAGE.theme);
     if (savedTheme && THEMES.some(t => t.id === savedTheme)) setTheme(savedTheme as ThemeId);
-    setAppearance(localStorage.getItem(STORAGE.appearance) === 'light' ? 'light' : 'dark');
+    setAppearance(localStorage.getItem(STORAGE.appearance) === 'dark' ? 'dark' : 'light');
 
     let cancelled = false;
     const hydrate = async (nextUser: User | null) => {
