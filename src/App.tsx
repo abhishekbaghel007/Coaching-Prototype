@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase';
 import { cloudEnabled, loadCloudSnapshot, syncAnswerRecords, syncAttempt, syncDailyActivity, syncQuestionStates, upsertProfile, type CloudAnswerRecord, type CloudAttempt } from './lib/cloudSync';
 import { QUESTIONS } from './data/questions';
 import StudentExperience from './student/StudentExperience';
+import ProgressFinal from './progress/ProgressFinal';
 
 type Question = (typeof QUESTIONS)[number] & { correct_indices?: number[]; status?: 'dropped' };
 type Tab = 'home' | 'practice' | 'mocks' | 'saved' | 'mistakes' | 'progress';
@@ -884,16 +885,7 @@ export default function App() {
   }
 
   function renderProgress() {
-    const weak = (Object.entries(stats) as Array<[Question['subject'], typeof stats.Physics]>).sort((a, b) => {
-      const aa = a[1].attempted ? a[1].correct / a[1].attempted : 1;
-      const bb = b[1].attempted ? b[1].correct / b[1].attempted : 1;
-      return aa - bb;
-    })[0];
-    return <main className="page"><section className="page-title"><div><span className="section-kicker">YOUR PERFORMANCE</span><h1>Progress.</h1><p>Useful numbers, not motivational confetti. The goal is to know what needs work.</p></div></section>
-      <section className="metrics-grid"><div className="metric-card"><small>QUESTIONS ANSWERED</small><strong>{totalAnswered}</strong><span>Across practice & mocks</span></div><div className="metric-card"><small>ACCURACY</small><strong>{overallAccuracy}%</strong><span>{totalAnswered ? `${totalCorrect} correct answers` : 'No attempts yet'}</span></div><div className="metric-card"><small>TODAY</small><strong>{today}</strong><span>of {target} target questions</span></div><div className="metric-card"><small>SAVED</small><strong>{saved.length}</strong><span>Ready for revision</span></div></section>
-      <section className="performance-panel"><div className="section-heading"><div><span className="section-kicker">SUBJECT PERFORMANCE</span><h2>Know your weak lane.</h2></div>{weak && <span className="weak-badge">Focus: {weak[0]}</span>}</div><div className="subject-performance">{SUBJECTS.map(s => { const st = stats[s.name]; const acc = st.attempted ? Math.round(st.correct / st.attempted * 100) : 0; return <div className="perf-row" key={s.name}><span className={`subject-mark ${s.tone}`}>{s.icon}</span><div className="perf-copy"><b>{s.name}</b><small>{st.attempted} attempted · {st.correct} correct · {st.incorrect} incorrect</small><div className="progress-track"><i style={{ width: `${acc}%` }} /></div></div><strong>{acc}%</strong></div>; })}</div></section>
-      <section className="performance-panel"><div className="section-heading"><div><span className="section-kicker">TEST HISTORY</span><h2>Recent attempts.</h2></div></div>{results.length ? <div className="history-list">{results.map((r, i) => { const s = scoreAttempt(r.ids, r.answers); return <button className="history-row" key={`${r.finishedAt}-${i}`} onClick={() => setResult(r)}><span><b>{r.title}</b><small>{new Date(r.finishedAt).toLocaleString()}</small></span><strong>{s.score}<small>{s.correct} correct · {s.incorrect} wrong</small></strong></button>; })}</div> : <div className="inline-empty">Complete a mock test and your history will appear here.</div>}</section>
-    </main>;
+    return <ProgressFinal onClose={() => go('home')} sampleDemo={user?.email?.trim().toLowerCase() === 'suprvirat@gmail.com'} />;
   }
 
   function renderPracticeSolver() {
@@ -1329,7 +1321,7 @@ export default function App() {
       .back-menu{background:color-mix(in srgb,var(--app-panel) 96%,transparent)!important;border:1px solid color-mix(in srgb,var(--text) 10%,transparent)!important;box-shadow:0 30px 100px rgba(0,0,0,.48)!important}
 
   `;
-  return <div className="app" data-theme={theme} data-appearance={appearance} style={{ '--accent': currentTheme.color } as CSSProperties}>
+  return <div className={`app ${tab === 'progress' ? 'progress-mode' : ''}`} data-theme={theme} data-appearance={appearance} style={{ '--accent': currentTheme.color } as CSSProperties}>
     <style>{mobilePolishCss}</style>
     <header className="top-nav"><button className="brand" onClick={() => go('home')}><span className="brand-mark">N</span><span>neet<span>prep</span></span></button><nav>{([['home', 'Home'], ['practice', 'Practice'], ['mocks', 'Tests'], ['saved', 'Saved'], ['mistakes', 'Mistakes'], ['progress', 'Progress']] as [Tab, string][]).map(([id, label]) => <button className={tab === id ? 'active' : ''} key={id} onClick={() => go(id)}>{label}</button>)}</nav><div className="nav-actions"><button className="nav-theme" onClick={() => setAppearanceOpen(true)}><i style={{ background: currentTheme.color }} /> Theme</button><button className="nav-search" onClick={() => { go('practice'); setTimeout(() => document.querySelector<HTMLInputElement>('.search-field input')?.focus(), 50); }}>⌕ <span>Search</span></button><button className="nav-bell" onClick={openAnnouncements} aria-label="Teacher announcements"><span>✦</span>{announcements.length > 0 && <i>{Math.min(announcements.length, 9)}</i>}</button>{user ? <button className="nav-avatar" onClick={() => setProfileOpen(true)}>{(user.email?.[0] ?? 'N').toUpperCase()}</button> : <button className="nav-login" onClick={() => setAuthOpen(true)}>Log in</button>}</div></header>
     {tab === 'home' && renderHome()}
