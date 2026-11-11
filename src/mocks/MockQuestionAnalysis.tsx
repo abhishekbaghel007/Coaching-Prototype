@@ -53,25 +53,43 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
 
         const { data: questionRows, error: questionError } = await supabase
           .from('mock_series_questions')
-          .select('id,mock_key,question_number,subject,question_text,options,correct_index,explanation')
+          .select('id,mock_key,question_number,subject,question_text,options')
           .eq('mock_key', mockKey)
           .order('question_number', { ascending: true });
 
         if (questionError) throw questionError;
 
-        const typedQuestions = (questionRows ?? []) as MockQuestion[];
-        const questionIds = typedQuestions.map(question => question.id);
+        const questionIds = (questionRows ?? []).map((question: { id: string }) => question.id);
         let responseRows: Array<{ question_id: string; selected_index: number }> = [];
+        let answerKeyRows: Array<{ question_id: string; correct_index: number; explanation: string | null }> = [];
 
         if (questionIds.length) {
-          const { data, error } = await supabase
-            .from('mock_series_responses')
-            .select('question_id,selected_index')
-            .eq('user_id', currentUserId)
-            .in('question_id', questionIds);
-          if (error) throw error;
-          responseRows = (data ?? []) as Array<{ question_id: string; selected_index: number }>;
+          const [responsesResult, answerKeysResult] = await Promise.all([
+            supabase
+              .from('mock_series_responses')
+              .select('question_id,selected_index')
+              .eq('user_id', currentUserId)
+              .in('question_id', questionIds),
+            supabase
+              .from('mock_series_answer_keys')
+              .select('question_id,correct_index,explanation')
+              .in('question_id', questionIds),
+          ]);
+          if (responsesResult.error) throw responsesResult.error;
+          if (answerKeysResult.error) throw answerKeysResult.error;
+          responseRows = (responsesResult.data ?? []) as Array<{ question_id: string; selected_index: number }>;
+          answerKeyRows = (answerKeysResult.data ?? []) as Array<{ question_id: string; correct_index: number; explanation: string | null }>;
         }
+
+        const answerKeyMap = new Map(answerKeyRows.map(row => [row.question_id, row]));
+        const typedQuestions = ((questionRows ?? []) as Array<Omit<MockQuestion, 'correct_index' | 'explanation'>>).map(question => {
+          const answerKey = answerKeyMap.get(question.id);
+          return {
+            ...question,
+            correct_index: answerKey?.correct_index ?? null,
+            explanation: answerKey?.explanation ?? null,
+          } as MockQuestion;
+        });
 
         if (!active) return;
         const responseMap: Record<string, number> = {};
