@@ -56,20 +56,21 @@ export default function ProgressFinal({onClose,onPractice,website=false,answers=
   const total=filtered.length;
   const correct=filtered.filter(a=>a.is_correct).length;
   const accuracy=total?Math.round(correct/total*100):0;
-  const activeDays=Object.values(daily).filter(v=>v>0).length;
+  const activeDays=Object.entries(daily).filter(([date,count])=>count>0&&(cutoff===0||new Date(date+'T12:00:00').getTime()>=cutoff)).length;
   const streak=useMemo(()=>{
     let n=0,d=new Date();
+    if(!(daily[day(d)]||0))d.setDate(d.getDate()-1);
     while((daily[day(d)]||0)>0){n+=1;d.setDate(d.getDate()-1);}
     return n;
   },[daily]);
-  const readiness=Math.min(100,Math.round(accuracy*.55+Math.min(100,total/150*100)*.25+Math.min(100,streak/14*100)*.2));
   const subject=subjects.map(s=>{
     const rows=filtered.filter(x=>x.subject===s);
     const c=rows.filter(x=>x.is_correct).length;
     return {s,n:rows.length,p:rows.length?Math.round(c/rows.length*100):0};
   });
-  const tests=[...results].sort((x,y)=>y.finishedAt-x.finishedAt).slice(0,8).map(r=>({...scoreSummary(r),title:r.title,finishedAt:r.finishedAt}));
-  const latestScaledScore=tests.length?Math.round(tests[0].percent*7.2):null;
+  const tests=[...results].filter(r=>r.finishedAt>=cutoff).sort((x,y)=>y.finishedAt-x.finishedAt).slice(0,8).map(r=>({...scoreSummary(r),title:r.title,finishedAt:r.finishedAt}));
+  const latestMarks=tests.length?tests[0].marks:null;
+  const latestMax=tests.length?tests[0].total*4:null;
   const weakest=[...subject].filter(x=>x.n>0).sort((x,y)=>x.p-y.p)[0];
   const activity=Array.from({length:14},(_,i)=>{
     const d=new Date();d.setDate(d.getDate()-(13-i));
@@ -95,9 +96,9 @@ export default function ProgressFinal({onClose,onPractice,website=false,answers=
           </div>
         </article>
         <article className="pf-card readiness">
-          <b>Preparation readiness</b>
-          <div className="ring" style={{'--readiness':readiness} as CSSProperties}><span><strong>{readiness}%</strong><small>READY</small></span></div>
-          <small>{readiness<50?'Build consistency first.':readiness<80?'Good momentum.':'Excellent rhythm.'}</small>
+          <b>Overall question accuracy</b>
+          <div className="ring" style={{'--readiness':accuracy} as CSSProperties}><span><strong>{accuracy}%</strong><small>ACCURACY</small></span></div>
+          <small>{correct} correct out of {total} attempted</small>
         </article>
       </section>
       <section className="stats">
@@ -110,7 +111,7 @@ export default function ProgressFinal({onClose,onPractice,website=false,answers=
       </section>
       <section className="grid" id="progress-details">
         <article className="pf-card panel">
-          <div className="head"><div><h2>Performance trend</h2><small>Recent practice scores · scaled to 720</small></div><em>{tests.length?'LIVE':'NO TESTS'}</em></div>
+          <div className="head"><div><h2>Performance trend</h2><small>Recent practice scores · actual marks (+4 / −1)</small></div><em>{tests.length?'LIVE':'NO TESTS'}</em></div>
           <div className="bars">{[...tests].reverse().map((x,i)=><span key={i} title={x.title + ': ' + x.marks + ' marks'} style={{height:Math.max(8,x.percent)+'%'}} />)}</div>
           {!tests.length&&<div className="pf-empty">Complete a practice set to build your performance trend.</div>}
         </article>
@@ -129,7 +130,7 @@ export default function ProgressFinal({onClose,onPractice,website=false,answers=
           <div className="mini-list">
             <div><span><Icon n="target"/> Mistake book</span><b>{mistakes.length}</b></div>
             <div><span><Icon n="book"/> Saved questions</span><b>{saved.length}</b></div>
-            <div><span><Icon n="clock"/> Latest scaled score</span><b>{latestScaledScore??'—'}</b></div>
+            <div><span><Icon n="clock"/> Latest practice marks</span><b>{latestMarks==null?'—':latestMarks+'/'+latestMax}</b></div>
           </div>
           {weakest&&<div className="weak-focus">Next focus: <b>{weakest.s}</b> · {weakest.p}% accuracy</div>}
         </article>
@@ -142,7 +143,7 @@ export default function ProgressFinal({onClose,onPractice,website=false,answers=
         </div>):<div className="pf-empty">Your submitted practice sessions will appear here.</div>}
       </section>
       <section className="pf-card next">
-        <div><span className="eyebrow">NEXT BEST MOVE</span><h2>{weakest?'Give '+weakest.s+' your next focused hour.':'Keep your streak alive.'}</h2><p>{latestScaledScore!=null?'Your latest session scales to about '+latestScaledScore+'/720 against your '+target+'-mark target.':'Complete a practice session to get a useful next step.'}</p></div>
+        <div><span className="eyebrow">NEXT BEST MOVE</span><h2>{weakest?'Give '+weakest.s+' your next focused hour.':'Keep your streak alive.'}</h2><p>{latestMarks!=null?'Your latest practice set: '+latestMarks+'/'+latestMax+' marks, using the NEET +4/−1 marking scheme.':'Complete a practice session to get a useful next step.'}</p></div>
         <button className="primary" onClick={onPractice}>Start focused practice <Icon n="arrow"/></button>
       </section>
     </main>
