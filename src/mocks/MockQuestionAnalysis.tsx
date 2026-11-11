@@ -141,7 +141,6 @@ function buildSimulation(mockKey: string, score: MockAnalysisScore) {
   });
 
   const questions = summaries.flatMap(summary => {
-    const config = configs.find(item => item.subject === summary.subject)!;
     return makeSubjectQuestions(
       mockKey,
       summary.subject,
