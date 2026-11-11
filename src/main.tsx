@@ -26,6 +26,8 @@ if (typeof document !== 'undefined') {
 
 function useMobileTouchBridge() {
   useEffect(() => {
+    // Let the browser handle native momentum scrolling on the public homepage.
+    if (document.documentElement.classList.contains('website-route')) return;
     if (!window.matchMedia('(pointer: coarse)').matches) return;
 
     let lastY = 0;
