@@ -278,7 +278,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
                     {question.options.map((option, index) => {
                       const isSelected = selected === index;
                       const isAnswer = question.correct_index === index;
-                      const state = isSelected && isWrong ? 'selected-wrong' : isAnswer && selected !== undefined ? 'correct-answer' : isSelected ? 'selected' : '';
+                      const state = isSelected && isWrong ? 'selected-wrong' : isAnswer ? 'correct-answer' : isSelected ? 'selected' : '';
                       return (
                         <button
                           key={index}
@@ -290,7 +290,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
                           <b>{LABELS[index]}.</b>
                           <span>{option}</span>
                           {isSelected && <small>Your choice</small>}
-                          {isAnswer && selected !== undefined && <small>Correct answer</small>}
+                          {isAnswer && <small>Correct answer</small>}
                         </button>
                       );
                     })}
