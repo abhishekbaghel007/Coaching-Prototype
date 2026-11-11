@@ -10,8 +10,7 @@ export type MockSeriesPaper = {
   questionIds: string[];
 };
 
-type MockSeriesScore = MockAnalysisScore & {
-
+type MockSeriesScore = MockAnalysisScore;
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
   { id: 'neet-level-2026-08-09', title: 'NEET Level Test – 09-Aug', date: '2026-08-09', dateLabel: '9 Aug 2026', questionIds: [] },
