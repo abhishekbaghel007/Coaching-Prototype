@@ -6,6 +6,7 @@ import { cloudEnabled, loadCloudSnapshot, syncAnswerRecords, syncAttempt, syncDa
 import { QUESTIONS } from './data/questions';
 import StudentExperience from './student/StudentExperience';
 import ProgressFinal from './progress/ProgressFinal';
+import MockTestSeries from './mocks/MockTestSeries';
 
 type Question = (typeof QUESTIONS)[number] & { correct_indices?: number[]; status?: 'dropped' };
 type Tab = 'home' | 'practice' | 'mocks' | 'saved' | 'mistakes' | 'progress';
@@ -874,6 +875,15 @@ export default function App() {
     const subjectTone: Record<Question['subject'], string> = { Physics: 'blue', Chemistry: 'teal', Biology: 'mint' };
     return <main className="page mock-builder-page">
       <div className="mock-builder-top"><button className="ghost-button" onClick={() => go('home')}>← Home</button><span className="exam-pill">TIMED MOCK EXAM</span></div>
+      <MockTestSeries onAttempt={paper => {
+        const pool = paper.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean) as Question[];
+        if (!pool.length || pool.length !== paper.questionIds.length) {
+          showToast('This paper is not fully loaded yet.');
+          return;
+        }
+        startAttempt(pool, 'mock', paper.title, 180 * 60);
+        setPaletteOpen(true);
+      }} />
       <section className="mock-builder-hero"><div><span className="section-kicker">NEET UG / EXAM MODE</span><h1>Build your own mock exam.</h1><p>Choose exactly what you want to test. During the exam, answers stay hidden and the interface follows an NTA-style computer based test flow.</p></div><div className="mock-summary"><small>YOUR MOCK</small><strong>{count}</strong><span>questions</span><hr/><b>{mockDuration} min · {mockSubjects.length} subjects</b></div></section>
 
       <div className="mock-builder-grid">
