@@ -106,6 +106,29 @@ export default function WebsiteHome(){
   `;
 
   return <div className={`np-site ${appearance}`} style={{'--site-accent':accent} as CSSProperties}><style>{css}</style>
+    <header className="np-nav">
+      <div className="np-wrap np-navin">
+        <a className="np-brand" href="/website" aria-label="NEETPrep home"><span className="np-logo">N</span><b>neet<span>prep</span></b></a>
+        <nav className="np-navlinks" aria-label="Main navigation">
+          <button onClick={()=>jump('features')}>Features</button>
+          <button onClick={()=>jump('subjects')}>Subjects</button>
+          <button onClick={()=>jump('journey')}>How it works</button>
+        </nav>
+        <div className="np-navactions">
+          <button className="np-login" onClick={goApp}>Sign in</button>
+          <button className="np-open" onClick={goApp}>Open student app <Icon name="arrow" size={13}/></button>
+        </div>
+        <button className="np-mobile" aria-label={mobile ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobile} onClick={()=>setMobile(v=>!v)}>
+          <Icon name={mobile ? 'close' : 'menu'} size={20}/>
+        </button>
+      </div>
+      {mobile && <div className="np-mobilemenu">
+        <button onClick={()=>jump('features')}>Features</button>
+        <button onClick={()=>jump('subjects')}>Subjects</button>
+        <button onClick={()=>jump('journey')}>How it works</button>
+        <button className="cta" onClick={goApp}>Open student app <Icon name="arrow" size={13}/></button>
+      </div>}
+    </header>
     <button className="np-floating-theme" onClick={()=>setAppearanceOpen(true)} aria-label="Open appearance settings"><i style={{background:accent}}/><span>Theme</span></button>
 
     <section className="np-hero"><div className="np-wrap np-herogrid"><div>
