@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+type Subject = 'Physics' | 'Chemistry' | 'Botany' | 'Zoology';
 type MockQuestion = {
   id: string;
   mock_key: string;
   question_number: number;
-  subject: 'Physics' | 'Chemistry' | 'Biology';
+  subject: Subject;
   question_text: string;
   options: string[];
   correct_index: number | null;
@@ -18,15 +19,17 @@ type Props = {
   onClose: () => void;
 };
 
-type Filter = 'all' | 'incorrect' | 'unanswered';
-
+type StatusFilter = 'all' | 'incorrect' | 'unanswered' | 'key-pending';
+type SubjectFilter = 'All' | Subject;
 const LABELS = ['A', 'B', 'C', 'D'];
+const SUBJECTS: Subject[] = ['Physics', 'Chemistry', 'Botany', 'Zoology'];
 
 export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Props) {
   const [questions, setQuestions] = useState<MockQuestion[]>([]);
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [userId, setUserId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>('All');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -109,24 +112,52 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
     return () => { active = false; };
   }, [mockKey]);
 
-  const wrongCount = useMemo(() => questions.filter(question => {
-    const selected = responses[question.id];
-    return selected !== undefined && question.correct_index !== null && selected !== question.correct_index;
-  }).length, [questions, responses]);
+  const subjectStats = useMemo(() => SUBJECTS.map(subject => {
+    const group = questions.filter(question => question.subject === subject);
+    const attempted = group.filter(question => responses[question.id] !== undefined);
+    const keyed = group.filter(question => question.correct_index !== null);
+    const correct = group.filter(question => {
+      const selected = responses[question.id];
+      return selected !== undefined && question.correct_index !== null && selected === question.correct_index;
+    }).length;
+    const incorrect = group.filter(question => {
+      const selected = responses[question.id];
+      return selected !== undefined && question.correct_index !== null && selected !== question.correct_index;
+    }).length;
+    const unanswered = group.filter(question => responses[question.id] === undefined).length;
+    const keyPending = group.filter(question => responses[question.id] !== undefined && question.correct_index === null).length;
+    return {
+      subject,
+      total: group.length,
+      attempted: attempted.length,
+      keyed: keyed.length,
+      correct,
+      incorrect,
+      unanswered,
+      keyPending,
+      score: correct * 4 - incorrect,
+    };
+  }), [questions, responses]);
 
-  const unansweredCount = useMemo(
-    () => questions.filter(question => responses[question.id] === undefined).length,
-    [questions, responses],
-  );
+  const totals = useMemo(() => subjectStats.reduce((sum, item) => ({
+    total: sum.total + item.total,
+    attempted: sum.attempted + item.attempted,
+    correct: sum.correct + item.correct,
+    incorrect: sum.incorrect + item.incorrect,
+    unanswered: sum.unanswered + item.unanswered,
+    keyPending: sum.keyPending + item.keyPending,
+    score: sum.score + item.score,
+  }), { total: 0, attempted: 0, correct: 0, incorrect: 0, unanswered: 0, keyPending: 0, score: 0 }), [subjectStats]);
 
   const visibleQuestions = useMemo(() => questions.filter(question => {
+    if (subjectFilter !== 'All' && question.subject !== subjectFilter) return false;
     const selected = responses[question.id];
-    if (filter === 'incorrect') {
-      return selected !== undefined && question.correct_index !== null && selected !== question.correct_index;
-    }
-    if (filter === 'unanswered') return selected === undefined;
+    const hasKey = question.correct_index !== null;
+    if (statusFilter === 'incorrect') return selected !== undefined && hasKey && selected !== question.correct_index;
+    if (statusFilter === 'unanswered') return selected === undefined;
+    if (statusFilter === 'key-pending') return selected !== undefined && !hasKey;
     return true;
-  }), [filter, questions, responses]);
+  }), [questions, responses, subjectFilter, statusFilter]);
 
   async function recordAnswer(question: MockQuestion, selectedIndex: number) {
     if (!userId) return;
@@ -163,7 +194,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
         <div>
           <span className="section-kicker">QUESTION-WISE REVIEW</span>
           <h3>{mockTitle}</h3>
-          <p>Text-only analysis. No question images or diagrams are displayed.</p>
+          <p>Text-only review with separate Physics, Chemistry, Botany and Zoology analysis.</p>
         </div>
         <button className="mock-analysis-close" onClick={onClose} aria-label="Close analysis">×</button>
       </div>
@@ -180,25 +211,51 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
         <div className="mock-analysis-empty">Loading question-wise analysis…</div>
       ) : userId && !loadError && questions.length === 0 ? (
         <div className="mock-analysis-empty">
-          <b>Question mapping is pending.</b>
-          <span>The uploaded PDFs contain the question papers and an OMR-sheet link, but no marked options or official answer key. I have not invented which questions you got wrong. Once the correct options are mapped, you can select what you marked and this page will show only incorrect questions with your selected option and the correct answer.</span>
+          <b>Question bank and answer key are not imported yet.</b>
+          <span>The uploaded PDFs provide the papers and OMR-sheet links, but they do not contain marked responses or an answer key. I will not invent question numbers or claim they were your mistakes. Once each text question and its checked answer key are loaded, this panel can compare your selected option and show the exact wrong question.</span>
         </div>
       ) : questions.length > 0 ? (
         <>
           <div className="mock-analysis-stats">
-            <div><small>QUESTIONS</small><b>{questions.length}</b></div>
-            <div><small>INCORRECT</small><b>{wrongCount}</b></div>
-            <div><small>UNANSWERED</small><b>{unansweredCount}</b></div>
+            <div><small>QUESTIONS MAPPED</small><b>{totals.total}</b></div>
+            <div><small>INCORRECT</small><b>{totals.incorrect}</b></div>
+            <div><small>UNANSWERED</small><b>{totals.unanswered}</b></div>
+            <div><small>SCORE FROM KEYED ANSWERS</small><b>{totals.score}</b></div>
           </div>
-          <div className="mock-analysis-filters">
-            {([
-              ['all', 'All questions'],
-              ['incorrect', `Incorrect · ${wrongCount}`],
-              ['unanswered', `Unanswered · ${unansweredCount}`],
-            ] as Array<[Filter, string]>).map(([value, label]) => (
-              <button key={value} className={filter === value ? 'active' : ''} onClick={() => setFilter(value)}>{label}</button>
+
+          <div className="mock-analysis-subject-grid">
+            {subjectStats.map(item => (
+              <button
+                type="button"
+                key={item.subject}
+                className={subjectFilter === item.subject ? 'mock-analysis-subject active' : 'mock-analysis-subject'}
+                onClick={() => setSubjectFilter(current => current === item.subject ? 'All' : item.subject)}
+              >
+                <span>{item.subject}</span>
+                <b>{item.score} <small>/ {item.subject === 'Botany' || item.subject === 'Zoology' ? 180 : 180}</small></b>
+                <small>{item.correct} correct · {item.incorrect} incorrect · {item.unanswered} blank</small>
+                {item.keyPending > 0 && <small>{item.keyPending} attempted · key pending</small>}
+              </button>
             ))}
           </div>
+
+          <div className="mock-analysis-filter-row">
+            <div className="mock-analysis-filters">
+              {([
+                ['all', 'All questions'],
+                ['incorrect', `Incorrect · ${totals.incorrect}`],
+                ['unanswered', `Unanswered · ${totals.unanswered}`],
+                ['key-pending', `Answer key pending · ${totals.keyPending}`],
+              ] as Array<[StatusFilter, string]>).map(([value, label]) => (
+                <button key={value} className={statusFilter === value ? 'active' : ''} onClick={() => setStatusFilter(value)}>{label}</button>
+              ))}
+            </div>
+            <select value={subjectFilter} onChange={event => setSubjectFilter(event.target.value as SubjectFilter)} aria-label="Filter by subject">
+              <option value="All">All subjects</option>
+              {SUBJECTS.map(subject => <option key={subject} value={subject}>{subject}</option>)}
+            </select>
+          </div>
+
           {saveError && <div className="mock-analysis-error">{saveError}</div>}
           <div className="mock-analysis-list">
             {visibleQuestions.map(question => {
@@ -214,6 +271,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
                     <span>{question.subject}</span>
                     {isWrong && <em className="wrong">Incorrect</em>}
                     {isCorrect && <em className="correct">Correct</em>}
+                    {selected !== undefined && !hasKey && <em className="pending">Key pending</em>}
                   </div>
                   <p className="mock-analysis-stem">{question.question_text}</p>
                   <div className="mock-analysis-options">
@@ -238,7 +296,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, onClose }: Pr
                     })}
                   </div>
                   {selected !== undefined && !hasKey && (
-                    <p className="mock-analysis-answer-pending">Your selected option is saved. The correct answer is still being checked.</p>
+                    <p className="mock-analysis-answer-pending">Your selected option is saved. The answer key is not verified yet.</p>
                   )}
                   {isWrong && (
                     <p className="mock-analysis-correction">
@@ -268,11 +326,20 @@ const css = `
 .mock-analysis-empty{display:grid;gap:7px;margin-top:14px;padding:15px;border:1px dashed var(--app-line);border-radius:12px;color:var(--app-muted);font-size:11px;line-height:1.6}
 .mock-analysis-empty b{color:var(--text)}
 .mock-analysis-error{margin-top:12px;padding:10px 12px;border:1px solid rgba(220,90,90,.28);border-radius:10px;color:var(--app-muted);font-size:10px}
-.mock-analysis-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:15px}
+.mock-analysis-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
 .mock-analysis-stats>div{padding:11px;border:1px solid var(--app-line);border-radius:11px}
 .mock-analysis-stats small{display:block;color:var(--app-muted);font-size:8px;font-weight:900;letter-spacing:.08em}
 .mock-analysis-stats b{display:block;margin-top:4px;color:var(--text);font-size:18px}
-.mock-analysis-filters{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}
+.mock-analysis-subject-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.mock-analysis-subject{display:grid;gap:5px;padding:11px;border:1px solid var(--app-line);border-radius:11px;background:transparent;color:var(--app-muted);text-align:left;cursor:pointer}
+.mock-analysis-subject.active{border-color:var(--apple-blue);background:color-mix(in srgb,var(--apple-blue) 8%,transparent)}
+.mock-analysis-subject>span{font-size:9px;font-weight:900}
+.mock-analysis-subject>b{color:var(--text);font-size:17px}
+.mock-analysis-subject>b small{color:var(--app-muted);font-size:8px;font-weight:600}
+.mock-analysis-subject>small{font-size:8px;line-height:1.4}
+.mock-analysis-filter-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:13px 0}
+.mock-analysis-filter-row select{max-width:170px;padding:8px 10px;border:1px solid var(--app-line);border-radius:9px;background:var(--app-panel);color:var(--text);font-size:9px}
+.mock-analysis-filters{display:flex;flex-wrap:wrap;gap:7px}
 .mock-analysis-filters button{padding:8px 11px;border:1px solid var(--app-line);border-radius:9px;background:transparent;color:var(--app-muted);font-size:9px;font-weight:800;cursor:pointer}
 .mock-analysis-filters button.active{border-color:var(--apple-blue);color:var(--text);background:color-mix(in srgb,var(--apple-blue) 9%,transparent)}
 .mock-analysis-list{display:grid;gap:10px}
@@ -283,6 +350,7 @@ const css = `
 .mock-analysis-qtop em{margin-left:auto;font-size:8px;font-style:normal;font-weight:900;letter-spacing:.04em}
 .mock-analysis-qtop em.wrong{color:#e28b83}
 .mock-analysis-qtop em.correct{color:#62c99b}
+.mock-analysis-qtop em.pending{color:#d9a752}
 .mock-analysis-stem{margin:11px 0;color:var(--text);font-size:12px;line-height:1.65;white-space:pre-wrap}
 .mock-analysis-options{display:grid;gap:6px}
 .mock-analysis-options button{display:flex;align-items:flex-start;gap:8px;width:100%;padding:9px 10px;border:1px solid var(--app-line);border-radius:9px;background:transparent;color:var(--app-muted);text-align:left;font-size:10px;line-height:1.5;cursor:pointer}
@@ -295,5 +363,6 @@ const css = `
 .mock-analysis-answer-pending,.mock-analysis-correction,.mock-analysis-explanation{margin:9px 0 0;padding:9px 10px;border-radius:8px;background:color-mix(in srgb,var(--text) 4%,transparent);color:var(--app-muted);font-size:10px;line-height:1.5}
 .mock-analysis-correction b{color:var(--text)}
 .mock-analysis-explanation{white-space:pre-wrap}
-@media(max-width:520px){.mock-analysis{padding:13px}.mock-analysis-stats{gap:5px}.mock-analysis-stats>div{padding:9px}.mock-analysis-stats b{font-size:16px}.mock-analysis-options button{flex-wrap:wrap}.mock-analysis-options button small{margin-left:25px}}
+@media(max-width:760px){.mock-analysis-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.mock-analysis-subject-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mock-analysis-filter-row{align-items:flex-start;flex-direction:column}.mock-analysis-filter-row select{max-width:none;width:100%}}
+@media(max-width:520px){.mock-analysis{padding:13px}.mock-analysis-options button{flex-wrap:wrap}.mock-analysis-options button small{margin-left:25px}}
 `;
