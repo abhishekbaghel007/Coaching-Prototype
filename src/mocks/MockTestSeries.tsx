@@ -166,7 +166,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
                         <small>{subject.short}</small>
                         <strong>{subject.marks}</strong>
                       </div>
-                      <span>{subject.correct}✓ · {subject.incorrect}✕ · {subject.unanswered} blank</span>
+                      <span>{subject.correct} est. correct · {subject.incorrect} est. wrong · {subject.unanswered} est. blank</span>
                     </div>
                   ))}
                 </div>
