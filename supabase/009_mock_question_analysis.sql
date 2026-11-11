@@ -13,6 +13,9 @@ alter table public.mock_series_scores
   add constraint mock_series_scores_score_status_check
   check (score_status in ('estimated', 'verified'));
 
+alter table public.mock_series_scores
+  alter column score_status set default 'estimated';
+
 create table if not exists public.mock_series_questions (
   id uuid primary key default gen_random_uuid(),
   mock_key text not null,
@@ -49,6 +52,9 @@ alter table public.mock_series_responses enable row level security;
 
 grant select, insert, update, delete on public.mock_series_questions to authenticated;
 grant select, insert, update, delete on public.mock_series_responses to authenticated;
+
+revoke all on public.mock_series_questions from anon;
+revoke all on public.mock_series_responses from anon;
 
 drop policy if exists mock_series_questions_authenticated_read on public.mock_series_questions;
 create policy mock_series_questions_authenticated_read
