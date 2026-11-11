@@ -519,3 +519,71 @@ body.student-route .student-v7 {
 }
 body.student-route .app { min-height:100dvh !important; position:relative !important; }
 @media (min-width:761px) { body.student-route .student-v7 { padding-bottom:120px !important; } }
+
+
+/* NEETPrep: clean light default, one header, and lighter rendering surfaces. */
+.app[data-appearance='light'] {
+  --np-bg:#f5f7f8;
+  --np-surface:#ffffff;
+  --np-surface-2:#eef2f4;
+  --np-surface-3:#e6ecef;
+  --np-text:#172126;
+  --np-muted:#68777e;
+  --np-soft:#4f6068;
+  --np-border:rgba(25,45,55,.10);
+  --np-border-strong:rgba(25,45,55,.16);
+  --app-bg:#f5f7f8;
+  --app-panel:#ffffff;
+  --app-panel-2:#f0f3f5;
+  --app-line:rgba(25,45,55,.10);
+  --app-muted:#68777e;
+  --text:#172126;
+  background:#f5f7f8 !important;
+  color:#172126 !important;
+}
+.app[data-appearance='light'] .top-nav {
+  background:#ffffff !important;
+  border-bottom:1px solid rgba(25,45,55,.09) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.app[data-appearance='light'] .top-nav nav button.active {
+  background:#edf1f3 !important;
+  color:#172126 !important;
+}
+.app[data-appearance='light'] .nav-theme,
+.app[data-appearance='light'] .nav-search,
+.app[data-appearance='light'] .nav-login,
+.app[data-appearance='light'] .nav-avatar {
+  background:#f5f7f8 !important;
+  color:#25343b !important;
+  border-color:rgba(25,45,55,.10) !important;
+}
+.app[data-appearance='light'] .mobile-header,
+.app[data-appearance='light'] .mobile-bottom {
+  background:#ffffff !important;
+  border-color:rgba(25,45,55,.10) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:0 6px 22px rgba(25,45,55,.08) !important;
+}
+/* The main app navigation is the only desktop header. */
+.student-v7 .v7-top { display:none !important; }
+/* Reduce expensive blur, animated transforms and paint work on the dashboard. */
+.student-v7 .v7-top,
+.student-v7 .v7-card,
+.student-v7 .v7-quick-card,
+.student-v7 .v7-plan-row,
+.student-v7 .v7-subject {
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  will-change:auto !important;
+}
+.student-v7 .v7-quick-card,
+.student-v7 .v7-plan-row,
+.student-v7 .v7-subject {
+  transition:background-color .12s ease,border-color .12s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app *, .student-v7 * { animation:none !important; transition:none !important; }
+}
