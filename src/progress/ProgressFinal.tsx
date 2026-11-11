@@ -42,14 +42,14 @@ type ProgressFinalProps = {
   onClose?:()=>void;
   onPractice?:()=>void;
   website?:boolean;
-  answers:Answer[];
-  results:Result[];
-  daily:Record<string,number>;
-  saved:string[];
-  mistakes:string[];
-  target:number;
+  answers?:Answer[];
+  results?:Result[];
+  daily?:Record<string,number>;
+  saved?:string[];
+  mistakes?:string[];
+  target?:number;
 };
-export default function ProgressFinal({onClose,onPractice,website=false,answers,results,daily,saved,mistakes,target}:ProgressFinalProps) {
+export default function ProgressFinal({onClose,onPractice,website=false,answers=[],results=[],daily={},saved=[],mistakes=[],target=650}:ProgressFinalProps) {
   const [range,setRange]=useState<'7D'|'30D'|'ALL'>('30D');
   const cutoff=range==='ALL'?0:Date.now()-(range==='7D'?7:30)*86400000;
   const filtered=answers.filter(a=>a.answeredAt>=cutoff);
