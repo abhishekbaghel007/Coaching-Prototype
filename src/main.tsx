@@ -171,8 +171,7 @@ function useProgressLauncher() {
 }
 
 function StudentShell() {
-  const [open, setOpen] = useProgressLauncher();
-  return <><App />{open && <ProgressFinal onClose={() => setOpen(false)} />}</>;
+  return <App />;
 }
 
 function WebsiteShell() {
