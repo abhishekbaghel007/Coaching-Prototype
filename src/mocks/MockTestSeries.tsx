@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import MockQuestionAnalysis from './MockQuestionAnalysis';
+import MockQuestionAnalysis, { type MockAnalysisScore } from './MockQuestionAnalysis';
 
 export type MockSeriesPaper = {
   id: string;
@@ -10,28 +10,8 @@ export type MockSeriesPaper = {
   questionIds: string[];
 };
 
-type MockSeriesScore = {
-  mock_key: string;
-  total_score: number;
-  physics_score: number;
-  chemistry_score: number;
-  botany_score: number;
-  zoology_score: number;
-  physics_correct: number;
-  physics_incorrect: number;
-  physics_unanswered: number;
-  chemistry_correct: number;
-  chemistry_incorrect: number;
-  chemistry_unanswered: number;
-  botany_correct: number;
-  botany_incorrect: number;
-  botany_unanswered: number;
-  zoology_correct: number;
-  zoology_incorrect: number;
-  zoology_unanswered: number;
-  score_status: 'estimated' | 'verified';
-  pdf_path: string | null;
-};
+type MockSeriesScore = MockAnalysisScore & {
+
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
   { id: 'neet-level-2026-08-09', title: 'NEET Level Test – 09-Aug', date: '2026-08-09', dateLabel: '9 Aug 2026', questionIds: [] },
@@ -50,7 +30,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
   const [scores, setScores] = useState<Record<string, MockSeriesScore>>({});
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoreLoadFailed, setScoreLoadFailed] = useState(false);
-  const [activeAnalysis, setActiveAnalysis] = useState<MockSeriesPaper | null>(null);
+  const [activeAnalysis, setActiveAnalysis] = useState<{ paper: MockSeriesPaper; score: MockSeriesScore } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -268,9 +248,9 @@ export default function MockTestSeries({ onAttempt }: Props) {
               {score && (
                 <button
                   className="mock-series-analysis"
-                  onClick={() => setActiveAnalysis(current => current?.id === paper.id ? null : paper)}
+                  onClick={() => setActiveAnalysis(current => current?.paper.id === paper.id ? null : { paper, score })}
                 >
-                  {activeAnalysis?.id === paper.id ? 'Close analysis' : 'Analyse in depth →'}
+                  {activeAnalysis?.paper.id === paper.id ? 'Close analysis' : 'View full analysis ↗'}
                 </button>
               )}
               <button
@@ -288,9 +268,10 @@ export default function MockTestSeries({ onAttempt }: Props) {
 
       {activeAnalysis && (
         <MockQuestionAnalysis
-          key={activeAnalysis.id}
-          mockKey={activeAnalysis.id}
-          mockTitle={activeAnalysis.title}
+          key={activeAnalysis.paper.id}
+          mockKey={activeAnalysis.paper.id}
+          mockTitle={activeAnalysis.paper.title}
+          score={activeAnalysis.score}
           onClose={() => setActiveAnalysis(null)}
         />
       )}
