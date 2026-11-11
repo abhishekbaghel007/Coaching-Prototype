@@ -30,6 +30,7 @@ type MockSeriesScore = {
   zoology_incorrect: number;
   zoology_unanswered: number;
   score_status: 'estimated' | 'verified';
+  pdf_path: string | null;
 };
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
@@ -50,6 +51,10 @@ export default function MockTestSeries({ onAttempt }: Props) {
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoreLoadFailed, setScoreLoadFailed] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<MockSeriesPaper | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadMessage, setUploadMessage] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -57,15 +62,17 @@ export default function MockTestSeries({ onAttempt }: Props) {
     const loadScores = async (userId: string | null) => {
       if (!userId) {
         if (active) {
+          setUserId(null);
           setScores({});
           setScoresLoading(false);
         }
         return;
       }
+      if (active) setUserId(userId);
 
       const { data, error } = await supabase
         .from('mock_series_scores')
-        .select('mock_key,total_score,physics_score,chemistry_score,botany_score,zoology_score,physics_correct,physics_incorrect,physics_unanswered,chemistry_correct,chemistry_incorrect,chemistry_unanswered,botany_correct,botany_incorrect,botany_unanswered,zoology_correct,zoology_incorrect,zoology_unanswered,score_status')
+        .select('mock_key,total_score,physics_score,chemistry_score,botany_score,zoology_score,physics_correct,physics_incorrect,physics_unanswered,chemistry_correct,chemistry_incorrect,chemistry_unanswered,botany_correct,botany_incorrect,botany_unanswered,zoology_correct,zoology_incorrect,zoology_unanswered,score_status,pdf_path')
         .eq('user_id', userId);
 
       if (!active) return;
@@ -109,6 +116,73 @@ export default function MockTestSeries({ onAttempt }: Props) {
 
   const scoredCount = Object.keys(scores).length;
 
+  async function uploadMockPdf(paper: MockSeriesPaper, file: File) {
+    if (!userId) {
+      setUploadError('Sign in before uploading a mock PDF.');
+      return;
+    }
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setUploadError('Please choose a PDF file.');
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError('The PDF must be smaller than 25 MB.');
+      return;
+    }
+
+    const fileNames: Record<string, string> = {
+      'neet-level-2026-08-09': 'neet-level-test-09-aug.pdf',
+      'neet-level-2026-09-06': 'neet-level-test-06-sep.pdf',
+      'neet-level-2026-09-27': 'neet-level-test-27-sep.pdf',
+      'neet-level-2026-10-11': 'neet-level-test-11-oct.pdf',
+      'neet-level-2026-10-25': 'neet-level-test-25-oct.pdf',
+      'neet-level-2026-11-05': 'neet-level-test-05-nov.pdf',
+    };
+    const filePath = fileNames[paper.id];
+    if (!filePath) return;
+
+    setUploadingKey(paper.id);
+    setUploadError('');
+    setUploadMessage('');
+    try {
+      const { error: storageError } = await supabase.storage
+        .from('coaching-mock-papers')
+        .upload(filePath, file, { upsert: true, contentType: 'application/pdf' });
+      if (storageError) throw storageError;
+
+      const { error: rowError } = await supabase
+        .from('mock_series_scores')
+        .update({ pdf_path: filePath })
+        .eq('user_id', userId)
+        .eq('mock_key', paper.id);
+      if (rowError) throw rowError;
+
+      setScores(current => ({
+        ...current,
+        [paper.id]: { ...current[paper.id], pdf_path: filePath },
+      }));
+      setUploadMessage(`${paper.title}: PDF uploaded.`);
+    } catch (error) {
+      console.error('Could not upload mock PDF', error);
+      setUploadError(error instanceof Error ? error.message : 'PDF upload failed. Check sign-in and Storage permissions.');
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
+  function publicPdfUrl(path: string) {
+    return supabase.storage.from('coaching-mock-papers').getPublicUrl(path).data.publicUrl;
+  }
+
+  const omrUrls: Record<string, string> = {
+    'neet-level-2026-08-09': 'https://www.neetprep.com/tests/omr_sheet/7709843',
+    'neet-level-2026-09-06': 'https://www.neetprep.com/tests/omr_sheet/7709851',
+    'neet-level-2026-09-27': 'https://www.neetprep.com/tests/omr_sheet/7709857',
+    'neet-level-2026-10-11': 'https://www.neetprep.com/tests/omr_sheet/7709863',
+    'neet-level-2026-10-25': 'https://www.neetprep.com/tests/omr_sheet/7709875',
+    'neet-level-2026-11-05': 'https://www.neetprep.com/tests/omr_sheet/7709883',
+  };
+
   return (
     <section className="mock-series">
       <style>{css}</style>
@@ -121,14 +195,14 @@ export default function MockTestSeries({ onAttempt }: Props) {
         <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} / 6 SCORED`}</span>
       </div>
 
-      <div className="mock-series-note">
-        <span aria-hidden="true">◎</span>
-        <p><b>Estimated scorecards.</b> The requested totals and four-subject splits are saved. They are not verified personal attempts: the uploaded PDFs contain the question papers and OMR-sheet link, not marked student responses.</p>
-      </div>
-
       {scoreLoadFailed && (
         <div className="mock-series-error" role="status">
           Saved marks could not be loaded. Check Supabase access and refresh the page.
+        </div>
+      )}
+      {(uploadError || uploadMessage) && (
+        <div className={uploadError ? 'mock-series-error' : 'mock-series-upload-success'} role="status">
+          {uploadError || uploadMessage}
         </div>
       )}
 
@@ -154,8 +228,28 @@ export default function MockTestSeries({ onAttempt }: Props) {
                 <span aria-hidden="true">◷</span>
                 <span>Test date: {paper.dateLabel}</span>
               </div>
+              <div className="mock-series-pdf-row">
+                {score?.pdf_path ? (
+                  <a className="mock-series-pdf-link" href={publicPdfUrl(score.pdf_path)} target="_blank" rel="noreferrer">Open question paper PDF ↗</a>
+                ) : (
+                  <label className="mock-series-pdf-upload">
+                    {uploadingKey === paper.id ? 'Uploading PDF…' : 'Add question paper PDF'}
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      disabled={uploadingKey !== null}
+                      onChange={event => {
+                        const selected = event.currentTarget.files?.[0];
+                        if (selected) void uploadMockPdf(paper, selected);
+                        event.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
+                )}
+                <a className="mock-series-omr-link" href={omrUrls[paper.id]} target="_blank" rel="noreferrer">OMR sheet ↗</a>
+              </div>
               <div className="mock-series-goal">
-                <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'ESTIMATED SCORE') : 'SCORE PENDING'}</span>
+                <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'RECONSTRUCTED SCORE') : 'SCORE PENDING'}</span>
                 <b>{score ? `${score.total_score} / 720` : '—'}</b>
               </div>
               {subjectBreakdown.length > 0 && (
@@ -166,7 +260,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
                         <small>{subject.short}</small>
                         <strong>{subject.marks}</strong>
                       </div>
-                      <span>{subject.correct} est. correct · {subject.incorrect} est. wrong · {subject.unanswered} est. blank</span>
+                      <span>{subject.correct} correct · {subject.incorrect} wrong · {subject.unanswered} blank</span>
                     </div>
                   ))}
                 </div>
@@ -210,11 +304,13 @@ const css = `
 .mock-series-heading h2{margin:7px 0 5px;font-size:clamp(27px,3vw,38px);letter-spacing:-1.6px;color:var(--text)}
 .mock-series-heading p{max-width:660px;margin:0;color:var(--app-muted);font-size:11px;line-height:1.6}
 .mock-series-count{flex:none;padding:8px 11px;border:1px solid var(--app-line);border-radius:10px;color:var(--app-muted);font-size:9px;font-weight:850;letter-spacing:.1em}
-.mock-series-note{display:flex;gap:11px;align-items:flex-start;margin:0 0 14px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--apple-blue) 20%,var(--app-line));border-radius:13px;background:color-mix(in srgb,var(--apple-blue) 6%,var(--app-panel))}
-.mock-series-note>span{color:var(--apple-blue);font-size:17px;line-height:1}
-.mock-series-note p{margin:0;color:var(--app-muted);font-size:10px;line-height:1.55}
-.mock-series-note b{color:var(--text)}
 .mock-series-error{margin:0 0 12px;padding:10px 12px;border:1px solid rgba(220,90,90,.28);border-radius:10px;color:var(--app-muted);font-size:10px}
+.mock-series-upload-success{margin:0 0 12px;padding:10px 12px;border:1px solid rgba(47,190,137,.28);border-radius:10px;color:var(--app-muted);font-size:10px}
+.mock-series-pdf-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.mock-series-pdf-upload,.mock-series-pdf-link,.mock-series-omr-link{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:7px 9px;border:1px solid var(--app-line);border-radius:8px;background:transparent;color:var(--text);font-size:9px;font-weight:800;text-decoration:none;cursor:pointer}
+.mock-series-pdf-upload input{display:none}
+.mock-series-pdf-upload:has(input:disabled){opacity:.6;cursor:wait}
+.mock-series-omr-link{color:var(--app-muted)}
 .mock-series-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
 .mock-series-card{min-width:0;padding:17px;border:1px solid var(--app-line);border-radius:17px;background:var(--app-panel)}
 .mock-series-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
