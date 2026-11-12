@@ -966,7 +966,6 @@ export default function App() {
           showToast('This test uses the available question bank (' + pool.length + ' questions).');
         }
         startAttempt(pool, 'mock', paper.title, paper.durationMinutes * 60);
-        setPaletteOpen(true);
       }} />
     </main>;
   }
@@ -990,7 +989,7 @@ export default function App() {
           <section className="builder-card"><div className="builder-head"><div className="step-no">02</div><div><span>QUESTION COUNT</span><h2>How long should the paper be?</h2></div><b>{maxCount} available</b></div><div className="count-presets">{[10,20,30,45,90,180].filter(n => n <= maxCount).map(n => <button key={n} className={count === n ? 'selected' : ''} onClick={() => setMockCount(n)}>{n === 180 ? 'FULL' : n}</button>)}</div><input className="count-range" type="range" min="1" max={maxCount} value={count} onChange={e => setMockCount(Number(e.target.value))}/><div className="range-foot"><span>1</span><b>{count} questions</b><span>{maxCount}</span></div></section>
           <section className="builder-card"><div className="builder-head"><div className="step-no">03</div><div><span>TIME LIMIT</span><h2>Set the clock.</h2></div><b>Auto-submit at 0:00</b></div><div className="time-presets">{[15,30,45,60,90,120,180].map(n => <button key={n} className={mockDuration === n ? 'selected' : ''} onClick={() => setMockDuration(n)}>{n} min</button>)}</div><label className="custom-time">Custom minutes <input type="number" min="1" max="600" value={mockDuration} onChange={e => setMockDuration(Math.max(1, Math.min(600, Number(e.target.value) || 1)))} /></label></section>
         </div>
-        <aside className="mock-rules-card"><span className="section-kicker">EXAM RULES</span><h2>Simulation mode</h2><ul><li>Questions can be visited in any order</li><li>Answers are not revealed during the exam</li><li>Save & Next records the current response</li><li>Mark for Review keeps the question in the review state</li><li>Clear Response removes the selected answer</li><li>Timer auto-submits when it reaches zero</li><li>Score and corrections appear only after submission</li></ul><div className="ready-box"><div><small>READY</small><strong>{count} questions</strong></div><span>{mockDuration} minutes</span></div><button className="primary-button full" disabled={!available.length} onClick={() => { const shuffled = [...available].sort(() => Math.random() - 0.5).slice(0, count); startAttempt(shuffled, 'mock', `NEET UG Mock · ${count} questions`, mockDuration * 60); setPaletteOpen(true); }}>START EXAM →</button><p className="builder-footnote">You can leave before starting without losing anything.</p></aside>
+        <aside className="mock-rules-card"><span className="section-kicker">EXAM RULES</span><h2>Simulation mode</h2><ul><li>Questions can be visited in any order</li><li>Answers are not revealed during the exam</li><li>Save & Next records the current response</li><li>Mark for Review keeps the question in the review state</li><li>Clear Response removes the selected answer</li><li>Timer auto-submits when it reaches zero</li><li>Score and corrections appear only after submission</li></ul><div className="ready-box"><div><small>READY</small><strong>{count} questions</strong></div><span>{mockDuration} minutes</span></div><button className="primary-button full" disabled={!available.length} onClick={() => { const shuffled = [...available].sort(() => Math.random() - 0.5).slice(0, count); startAttempt(shuffled, 'mock', `NEET UG Mock · ${count} questions`, mockDuration * 60); }}>START EXAM →</button><p className="builder-footnote">You can leave before starting without losing anything.</p></aside>
       </div>
     </main>;
   }
@@ -1083,6 +1082,113 @@ export default function App() {
           </div>
         </main>
       </div>
+    </div>;
+  }
+
+  function renderExamInstructions() {
+    if (!pendingAttempt) return null;
+    const pool = pendingAttempt.pool;
+    const questionCount = pool.length;
+    const subjectCounts = (['Physics', 'Chemistry', 'Biology'] as Question['subject'][]).map(subject => ({
+      subject,
+      count: pool.filter(question => question.subject === subject).length,
+    })).filter(item => item.count > 0);
+
+    return <div className="exam-instructions-overlay" role="dialog" aria-modal="true" aria-labelledby="exam-instructions-title">
+      <style>{examInstructionsCss}</style>
+      <section className="exam-instructions-dialog">
+        <header className="exam-instructions-header">
+          <div>
+            <span className="exam-instructions-kicker">NEETPREP · EXAM MODE</span>
+            <h1 id="exam-instructions-title">GENERAL INSTRUCTIONS</h1>
+          </div>
+          <button type="button" aria-label="Close instructions" onClick={cancelPendingMock}>×</button>
+        </header>
+
+        <div className="exam-instructions-scroll">
+          <div className="exam-instructions-intro">
+            <span className="exam-instructions-eyebrow">BEFORE YOU BEGIN</span>
+            <h2>Please read the instructions carefully</h2>
+            <p>Take a moment to understand the timer, question palette and answer controls. Your exam timer will start only after you press Proceed.</p>
+            <div className="exam-instructions-summary">
+              <div><small>TEST</small><strong>{pendingAttempt.title}</strong></div>
+              <div><small>QUESTIONS</small><strong>{questionCount}</strong></div>
+              <div><small>DURATION</small><strong>{formatTime(pendingAttempt.duration)}</strong></div>
+            </div>
+            <div className="exam-instructions-subjects">
+              {subjectCounts.map(item => <span key={item.subject}>{item.subject} <b>{item.count}</b></span>)}
+            </div>
+          </div>
+
+          <section className="exam-instruction-section">
+            <h3>1. General instructions</h3>
+            <ol>
+              <li>The total duration of this examination is <b>{Math.round(pendingAttempt.duration / 60)} minutes</b>. The countdown begins when you select <b>Proceed</b>.</li>
+              <li>The timer is shown at the top-right of the exam screen. The test will be submitted automatically when the timer reaches zero.</li>
+              <li>The question palette on the right shows the status of every question.</li>
+            </ol>
+            <div className="exam-instruction-legend">
+              <div><i className="legend-not-visited" /><span><b>Not visited</b><small>You have not opened this question yet.</small></span></div>
+              <div><i className="legend-not-answered" /><span><b>Not answered</b><small>You visited this question but have not selected an answer.</small></span></div>
+              <div><i className="legend-answered" /><span><b>Answered</b><small>You selected an option for this question.</small></span></div>
+              <div><i className="legend-review" /><span><b>Marked for review</b><small>You marked this question to revisit it later.</small></span></div>
+              <div><i className="legend-answered-review" /><span><b>Answered &amp; marked for review</b><small>Your selected answer remains saved and will be evaluated.</small></span></div>
+            </div>
+            <ol start={4}>
+              <li>Use the arrow on the question palette to collapse or reopen it and make more room for the question.</li>
+              <li>Questions can be visited in any order. Selecting a question number in the palette takes you directly to it.</li>
+            </ol>
+          </section>
+
+          <section className="exam-instruction-section">
+            <h3>2. Navigating between questions</h3>
+            <ol>
+              <li><b>Save &amp; Next</b> keeps your selected response and opens the next question.</li>
+              <li><b>Mark for Review &amp; Next</b> marks the current question for review and moves forward. Any selected answer is retained.</li>
+              <li>Select any question number in the palette to return to it at any time.</li>
+              <li>Use <b>Back</b> to revisit the previous question.</li>
+            </ol>
+          </section>
+
+          <section className="exam-instruction-section">
+            <h3>3. Answering a question</h3>
+            <ol>
+              <li>Select one of the four options (A, B, C or D) to record your response.</li>
+              <li>Select the same option again, or use <b>Clear Response</b>, to remove your answer.</li>
+              <li>Select a different option to change your response.</li>
+              <li>Your latest selected option is the response used for evaluation.</li>
+              <li>Questions marked for review are not automatically excluded. Answered and marked questions are evaluated normally.</li>
+            </ol>
+          </section>
+
+          <section className="exam-instruction-section">
+            <h3>4. Marking scheme &amp; submission</h3>
+            <div className="exam-instruction-marks">
+              <div><b>+4</b><span>Correct answer</span></div>
+              <div><b>−1</b><span>Incorrect answer</span></div>
+              <div><b>0</b><span>Unanswered</span></div>
+            </div>
+            <ol>
+              <li>Use <b>Submit Test</b> or <b>End Test</b> when you are ready to finish.</li>
+              <li>A confirmation screen will show answered, unanswered and review counts before final submission.</li>
+              <li>Once submitted, the attempt is closed and the result is calculated from your recorded responses.</li>
+            </ol>
+          </section>
+
+          <div className="exam-instructions-language-note">Please answer using the original question shown on the screen. Where a scanned paper page is displayed, use the printed question and options on that scan.</div>
+        </div>
+
+        <footer className="exam-instructions-footer">
+          <label className="exam-instructions-declaration">
+            <input type="checkbox" checked={instructionsAccepted} onChange={event => setInstructionsAccepted(event.currentTarget.checked)} />
+            <span>I have read and understood the instructions. I am ready to begin this examination and understand that the timer starts only after I press Proceed.</span>
+          </label>
+          <div className="exam-instructions-actions">
+            <button type="button" className="exam-instructions-back" onClick={cancelPendingMock}>Back to test series</button>
+            <button type="button" className="exam-instructions-proceed" disabled={!instructionsAccepted} onClick={proceedWithMock}>PROCEED <span>→</span></button>
+          </div>
+        </footer>
+      </section>
     </div>;
   }
 
@@ -1458,6 +1564,7 @@ export default function App() {
     {tab === 'mistakes' && renderRevision('mistakes')}
     {tab === 'progress' && renderProgress()}
     <nav className="mobile-bottom"><button className={tab === 'home' ? 'active' : ''} onClick={() => go('home')}><span><MobileIcon name="home" /></span><b>Home</b></button><button className={tab === 'practice' ? 'active' : ''} onClick={() => go('practice')}><span><MobileIcon name="practice" /></span><b>Practice</b></button><button className="mobile-plus" aria-label="Quick practice" onClick={() => startAttempt(questions.filter(q => q.status !== 'dropped').slice(0, 10), 'practice', 'Quick practice')}><span aria-hidden="true">✦</span></button><button className={tab === 'mocks' ? 'active' : ''} onClick={() => go('mocks')}><span><MobileIcon name="test" /></span><b>Tests</b></button><button className={tab === 'progress' ? 'active' : ''} onClick={() => { setResult(null); setTab('progress'); window.scrollTo({ top: 0, behavior: 'auto' }); }}><span><MobileIcon name="progress" /></span><b>Progress</b></button></nav>
+    {pendingAttempt && renderExamInstructions()}
     {solver && renderSolver()}
     {result && renderResult()}
     {backMenuOpen && <div className="back-menu-backdrop" onMouseDown={() => setBackMenuOpen(false)}>
