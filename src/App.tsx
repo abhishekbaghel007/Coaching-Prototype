@@ -1137,7 +1137,7 @@ export default function App() {
               </div>
             ) : <div className="practice-question-text">{display.stem}</div>}
             <div className="practice-tags"><span>{current.source || 'NEET question'}</span><span>Level: {current.difficulty}</span>{current.status === 'dropped' && <span className="dropped-tag">Dropped by NTA</span>}</div>
-            {sourcePage && <button className="practice-source-link" onClick={() => window.open(`/source-pages/page-${sourcePage}.jpg`, '_blank')}>View original paper scan ↗</button>}
+            {sourcePage && !scanOnly && <button className="practice-source-link" onClick={() => window.open(`/source-pages/page-${sourcePage}.jpg`, '_blank')}>View original paper scan ↗</button>}
           </div>
 
           <div className="practice-options-heading"><strong>Answer choices</strong><span>Select one option</span></div>
@@ -1268,7 +1268,7 @@ export default function App() {
             <span>I have read and understood the instructions. I am ready to begin this examination and understand that the timer starts only after I press Proceed.</span>
           </label>
           <div className="exam-instructions-actions">
-            <button type="button" className="exam-instructions-back" onClick={cancelPendingMock}>Back to test series</button>
+            <button type="button" className="exam-instructions-back" onClick={cancelPendingMock}>Go back</button>
             <button type="button" className="exam-instructions-proceed" disabled={!instructionsAccepted} onClick={proceedWithMock}>PROCEED <span>→</span></button>
           </div>
         </footer>
