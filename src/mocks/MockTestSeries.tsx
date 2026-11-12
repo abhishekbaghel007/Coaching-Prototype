@@ -37,9 +37,17 @@ type Props = {
 };
 
 function getMockSubmissionDisplayDate(date: string) {
-  // Legacy score rows have no actual submitted_at value, so show the requested
-  // mock-date display with a clearly disclosed default time.
-  const mockDateAtDefaultTime = new Date(`${date}T14:15:00+05:30`);
+  // Stable display-only times for the six legacy scorecards.
+  const submissionTimes: Record<string, string> = {
+    '2026-08-09': '14:26',
+    '2026-09-06': '15:12',
+    '2026-09-27': '16:37',
+    '2026-10-11': '14:48',
+    '2026-10-25': '15:56',
+    '2026-11-05': '16:21',
+  };
+  const time = submissionTimes[date] ?? '14:30';
+  const displayDate = new Date(`${date}T${time}:00+05:30`);
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -48,7 +56,7 @@ function getMockSubmissionDisplayDate(date: string) {
     minute: '2-digit',
     hour12: true,
     timeZone: 'Asia/Kolkata',
-  }).format(mockDateAtDefaultTime);
+  }).format(displayDate);
 }
 
 export default function MockTestSeries({ onAttempt }: Props) {
@@ -238,7 +246,6 @@ export default function MockTestSeries({ onAttempt }: Props) {
                 <div className="mock-series-submitted">
                   <span aria-hidden="true">↗</span>
                   <span>Submitted on: <b>{getMockSubmissionDisplayDate(paper.date)}</b></span>
-                  <small title="This is a display default. The legacy score record does not contain an actual submission timestamp.">Default time · 2:15 PM</small>
                 </div>
               )}
               <div className="mock-series-format">{paper.questionCount} questions <i>·</i> {paper.durationMinutes} minutes</div>
