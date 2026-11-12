@@ -37,11 +37,13 @@ type Props = {
 export default function MockTestSeries({ onAttempt }: Props) {
   const [scores, setScores] = useState<Record<string, MockSeriesScore>>({});
   const [uploadedPapers, setUploadedPapers] = useState<Record<string, string>>({});
+  const [uploadedOmrs, setUploadedOmrs] = useState<Record<string, string>>({});
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoreLoadFailed, setScoreLoadFailed] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<{ paper: MockSeriesPaper; score: MockSeriesScore } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [uploadingOmrKey, setUploadingOmrKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
 
@@ -54,6 +56,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
           setUserId(null);
           setScores({});
           setUploadedPapers({});
+          setUploadedOmrs({});
           setScoreLoadFailed(false);
           setScoresLoading(false);
         }
@@ -87,6 +90,14 @@ export default function MockTestSeries({ onAttempt }: Props) {
         const nextPapers: Record<string, string> = {};
         (paperRows ?? []).forEach(row => { nextPapers[row.mock_key] = row.pdf_path; });
         setUploadedPapers(nextPapers);
+      }
+      const { data: omrRows, error: omrError } = await supabase.from('mock_series_omr_files').select('mock_key,omr_path').eq('user_id', userId);
+      if (!active) return;
+      if (omrError) { console.error('Could not load uploaded OMR sheets', omrError); setUploadedOmrs({}); }
+      else {
+        const nextOmrs: Record<string, string> = {};
+        (omrRows ?? []).forEach(row => { nextOmrs[row.mock_key] = row.omr_path; });
+        setUploadedOmrs(nextOmrs);
       }
       setScoreLoadFailed(false);
       setScoresLoading(false);
@@ -135,18 +146,30 @@ export default function MockTestSeries({ onAttempt }: Props) {
     } finally { setUploadingKey(null); }
   }
 
+  async function uploadOmrPdf(paper: MockSeriesPaper, file: File) {
+    if (!userId) { setUploadError('Sign in before uploading an OMR sheet.'); return; }
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) { setUploadError('Please choose an OMR PDF file.'); return; }
+    if (file.size > 25 * 1024 * 1024) { setUploadError('The OMR PDF must be smaller than 25 MB.'); return; }
+    const filePath = userId + '/' + paper.id + '-omr.pdf';
+    setUploadingOmrKey(paper.id); setUploadError(''); setUploadMessage('');
+    try {
+      const { error: storageError } = await supabase.storage.from('coaching-mock-papers').upload(filePath, file, { upsert: true, contentType: 'application/pdf' });
+      if (storageError) throw storageError;
+      const { error: rowError } = await supabase.from('mock_series_omr_files').upsert({
+        user_id: userId, mock_key: paper.id, omr_path: filePath, uploaded_at: new Date().toISOString()
+      }, { onConflict: 'user_id,mock_key' });
+      if (rowError) throw rowError;
+      setUploadedOmrs(current => ({ ...current, [paper.id]: filePath }));
+      setUploadMessage(paper.title + ': OMR sheet uploaded successfully.');
+    } catch (error) {
+      console.error('Could not upload OMR sheet', error);
+      setUploadError(error instanceof Error ? error.message : 'OMR upload failed. Check sign-in and Storage permissions.');
+    } finally { setUploadingOmrKey(null); }
+  }
+
   function publicPdfUrl(path: string) {
     return supabase.storage.from('coaching-mock-papers').getPublicUrl(path).data.publicUrl;
   }
-
-  const omrUrls: Record<string, string> = {
-    'neet-level-2026-08-09': 'https://www.neetprep.com/tests/omr_sheet/7709843',
-    'neet-level-2026-09-06': 'https://www.neetprep.com/tests/omr_sheet/7709851',
-    'neet-level-2026-09-27': 'https://www.neetprep.com/tests/omr_sheet/7709857',
-    'neet-level-2026-10-11': 'https://www.neetprep.com/tests/omr_sheet/7709863',
-    'neet-level-2026-10-25': 'https://www.neetprep.com/tests/omr_sheet/7709875',
-    'neet-level-2026-11-05': 'https://www.neetprep.com/tests/omr_sheet/7709883',
-  };
 
   return (
     <section className="mock-series">
@@ -175,6 +198,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
         {orderedPapers.map((paper, index) => {
           const score = scores[paper.id];
           const pdfPath = uploadedPapers[paper.id] ?? score?.pdf_path ?? null;
+          const omrPath = uploadedOmrs[paper.id] ?? null;
           const subjectBreakdown = score ? [
             { label: 'Physics', short: 'PHY', marks: score.physics_score, correct: score.physics_correct, incorrect: score.physics_incorrect, unanswered: score.physics_unanswered },
             { label: 'Chemistry', short: 'CHEM', marks: score.chemistry_score, correct: score.chemistry_correct, incorrect: score.chemistry_incorrect, unanswered: score.chemistry_unanswered },
@@ -195,24 +219,39 @@ export default function MockTestSeries({ onAttempt }: Props) {
               </div>
               <div className="mock-series-format">{paper.questionCount} questions <i>·</i> {paper.durationMinutes} minutes</div>
               <div className="mock-series-pdf-row">
-                {pdfPath && (
+                {pdfPath ? (
                   <a className="mock-series-pdf-link" href={publicPdfUrl(pdfPath)} target="_blank" rel="noreferrer">Open question paper PDF ↗</a>
+                ) : (
+                  <label className="mock-series-pdf-upload">
+                    {uploadingKey === paper.id ? 'Uploading PDF…' : 'Upload question paper PDF'}
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      disabled={uploadingKey !== null}
+                      onChange={event => {
+                        const selected = event.currentTarget.files?.[0];
+                        if (selected) void uploadMockPdf(paper, selected);
+                        event.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
                 )}
-                <label className="mock-series-pdf-upload">
-                  {uploadingKey === paper.id ? 'Uploading PDF…' : pdfPath ? 'Replace paper PDF' : 'Upload question paper PDF'}
-                  <input
-                    type="file"
-                    accept="application/pdf,.pdf"
-                    disabled={uploadingKey !== null}
-                    onChange={event => {
-                      const selected = event.currentTarget.files?.[0];
-                      if (selected) void uploadMockPdf(paper, selected);
-                      event.currentTarget.value = '';
-                    }}
-                  />
-                </label>
-                {omrUrls[paper.id] && (
-                  <a className="mock-series-omr-link" href={omrUrls[paper.id]} target="_blank" rel="noreferrer">OMR sheet ↗</a>
+                {omrPath ? (
+                  <a className="mock-series-omr-link" href={publicPdfUrl(omrPath)} target="_blank" rel="noreferrer">Open OMR sheet ↗</a>
+                ) : (
+                  <label className="mock-series-pdf-upload mock-series-omr-upload">
+                    {uploadingOmrKey === paper.id ? 'Uploading OMR…' : 'Upload OMR sheet'}
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      disabled={uploadingOmrKey !== null}
+                      onChange={event => {
+                        const selected = event.currentTarget.files?.[0];
+                        if (selected) void uploadOmrPdf(paper, selected);
+                        event.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
                 )}
               </div>
               <div className="mock-series-goal">
