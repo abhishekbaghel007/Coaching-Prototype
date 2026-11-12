@@ -8,17 +8,26 @@ export type MockSeriesPaper = {
   date: string;
   dateLabel: string;
   questionIds: string[];
+  questionCount: number;
+  durationMinutes: number;
 };
 
 type MockSeriesScore = MockAnalysisScore;
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
-  { id: 'neet-level-2026-08-09', title: 'NEET Level Test – 09-Aug', date: '2026-08-09', dateLabel: '9 Aug 2026', questionIds: [] },
-  { id: 'neet-level-2026-09-06', title: 'NEET Level Test – 06-Sep', date: '2026-09-06', dateLabel: '6 Sep 2026', questionIds: [] },
-  { id: 'neet-level-2026-09-27', title: 'NEET Level Test – 27-Sep', date: '2026-09-27', dateLabel: '27 Sep 2026', questionIds: [] },
-  { id: 'neet-level-2026-10-11', title: 'NEET Level Test – 11-Oct', date: '2026-10-11', dateLabel: '11 Oct 2026', questionIds: [] },
-  { id: 'neet-level-2026-10-25', title: 'NEET Level Test – 25-Oct', date: '2026-10-25', dateLabel: '25 Oct 2026', questionIds: [] },
-  { id: 'neet-level-2026-11-05', title: 'NEET Level Test –05-Nov', date: '2026-11-05', dateLabel: '5 Nov 2026', questionIds: [] },
+  { id: 'coaching-2026-04-05-lets-start-02', title: 'LET'S START #2 - 05-Apr', date: '2026-04-05', dateLabel: '5 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-04-12-builder', title: 'NEET Level Test - 12-Apr (BUILDER)', date: '2026-04-12', dateLabel: '12 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-04-26-builder', title: 'NEET Level Test - 26-Apr (BUILDER)', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'coaching-2026-04-26-lets-start-03', title: 'LET'S START #3 - 26-Apr', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-05-20-120q', title: 'NEET Level Test (120 Q) - 20-May (Only Online)', date: '2026-05-20', dateLabel: '20 May 2026', questionIds: [], questionCount: 120, durationMinutes: 120 },
+  { id: 'neet-level-2026-06-14', title: 'NEET Level Test - 14-Jun', date: '2026-06-14', dateLabel: '14 Jun 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-07-12', title: 'NEET Level Test - 12-Jul', date: '2026-07-12', dateLabel: '12 Jul 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-08-09', title: 'NEET Level Test - 09-Aug', date: '2026-08-09', dateLabel: '9 Aug 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-09-06', title: 'NEET Level Test - 06-Sep', date: '2026-09-06', dateLabel: '6 Sep 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-09-27', title: 'NEET Level Test - 27-Sep', date: '2026-09-27', dateLabel: '27 Sep 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-10-11', title: 'NEET Level Test - 11-Oct', date: '2026-10-11', dateLabel: '11 Oct 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-10-25', title: 'NEET Level Test - 25-Oct', date: '2026-10-25', dateLabel: '25 Oct 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-11-05', title: 'NEET Level Test - 05-Nov', date: '2026-11-05', dateLabel: '5 Nov 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
 ];
 
 type Props = {
@@ -27,6 +36,7 @@ type Props = {
 
 export default function MockTestSeries({ onAttempt }: Props) {
   const [scores, setScores] = useState<Record<string, MockSeriesScore>>({});
+  const [uploadedPapers, setUploadedPapers] = useState<Record<string, string>>({});
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoreLoadFailed, setScoreLoadFailed] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<{ paper: MockSeriesPaper; score: MockSeriesScore } | null>(null);
@@ -43,6 +53,8 @@ export default function MockTestSeries({ onAttempt }: Props) {
         if (active) {
           setUserId(null);
           setScores({});
+          setUploadedPapers({});
+          setScoreLoadFailed(false);
           setScoresLoading(false);
         }
         return;
@@ -68,6 +80,14 @@ export default function MockTestSeries({ onAttempt }: Props) {
         nextScores[score.mock_key] = score;
       });
       setScores(nextScores);
+      const { data: paperRows, error: paperError } = await supabase.from('mock_series_paper_files').select('mock_key,pdf_path').eq('user_id', userId);
+      if (!active) return;
+      if (paperError) { console.error('Could not load uploaded mock PDFs', paperError); setUploadedPapers({}); }
+      else {
+        const nextPapers: Record<string, string> = {};
+        (paperRows ?? []).forEach(row => { nextPapers[row.mock_key] = row.pdf_path; });
+        setUploadedPapers(nextPapers);
+      }
       setScoreLoadFailed(false);
       setScoresLoading(false);
     };
@@ -96,57 +116,22 @@ export default function MockTestSeries({ onAttempt }: Props) {
   const scoredCount = Object.keys(scores).length;
 
   async function uploadMockPdf(paper: MockSeriesPaper, file: File) {
-    if (!userId) {
-      setUploadError('Sign in before uploading a mock PDF.');
-      return;
-    }
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      setUploadError('Please choose a PDF file.');
-      return;
-    }
-    if (file.size > 25 * 1024 * 1024) {
-      setUploadError('The PDF must be smaller than 25 MB.');
-      return;
-    }
-
-    const fileNames: Record<string, string> = {
-      'neet-level-2026-08-09': 'neet-level-test-09-aug.pdf',
-      'neet-level-2026-09-06': 'neet-level-test-06-sep.pdf',
-      'neet-level-2026-09-27': 'neet-level-test-27-sep.pdf',
-      'neet-level-2026-10-11': 'neet-level-test-11-oct.pdf',
-      'neet-level-2026-10-25': 'neet-level-test-25-oct.pdf',
-      'neet-level-2026-11-05': 'neet-level-test-05-nov.pdf',
-    };
-    const filePath = fileNames[paper.id];
-    if (!filePath) return;
-
-    setUploadingKey(paper.id);
-    setUploadError('');
-    setUploadMessage('');
+    if (!userId) { setUploadError('Sign in before uploading a mock PDF.'); return; }
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) { setUploadError('Please choose a PDF file.'); return; }
+    if (file.size > 25 * 1024 * 1024) { setUploadError('The PDF must be smaller than 25 MB.'); return; }
+    const filePath = userId + '/' + paper.id + '.pdf';
+    setUploadingKey(paper.id); setUploadError(''); setUploadMessage('');
     try {
-      const { error: storageError } = await supabase.storage
-        .from('coaching-mock-papers')
-        .upload(filePath, file, { upsert: true, contentType: 'application/pdf' });
+      const { error: storageError } = await supabase.storage.from('coaching-mock-papers').upload(filePath, file, { upsert: true, contentType: 'application/pdf' });
       if (storageError) throw storageError;
-
-      const { error: rowError } = await supabase
-        .from('mock_series_scores')
-        .update({ pdf_path: filePath })
-        .eq('user_id', userId)
-        .eq('mock_key', paper.id);
+      const { error: rowError } = await supabase.from('mock_series_paper_files').upsert({ user_id: userId, mock_key: paper.id, pdf_path: filePath, uploaded_at: new Date().toISOString() }, { onConflict: 'user_id,mock_key' });
       if (rowError) throw rowError;
-
-      setScores(current => ({
-        ...current,
-        [paper.id]: { ...current[paper.id], pdf_path: filePath },
-      }));
-      setUploadMessage(`${paper.title}: PDF uploaded.`);
+      setUploadedPapers(current => ({ ...current, [paper.id]: filePath }));
+      setUploadMessage(paper.title + ': PDF uploaded successfully.');
     } catch (error) {
       console.error('Could not upload mock PDF', error);
       setUploadError(error instanceof Error ? error.message : 'PDF upload failed. Check sign-in and Storage permissions.');
-    } finally {
-      setUploadingKey(null);
-    }
+    } finally { setUploadingKey(null); }
   }
 
   function publicPdfUrl(path: string) {
