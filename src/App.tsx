@@ -27,6 +27,7 @@ type Attempt = {
 };
 
 type AnswerRecord = Omit<CloudAnswerRecord, 'answered_at'> & { answeredAt: number };
+type PendingAttempt = { pool: Question[]; title: string; duration: number };
 
 function cloudAnswerToLocal(record: CloudAnswerRecord): AnswerRecord {
   return { ...record, answeredAt: new Date(record.answered_at).getTime() };
@@ -110,6 +111,11 @@ const QUESTION_DISPLAY_OVERRIDES: Record<string, { stem: string; options: string
     options: ['2', '1', '4', '3'],
   },
 };
+
+function shouldUseOriginalScan(q: Question) {
+  const sourceIndex = Number(String(q.id).match(/-q(\\d+)$/)?.[1] ?? 0);
+  return sourceIndex > 10 && Number.isFinite(q.sourcePage);
+}
 
 function getQuestionDisplay(q: Question) {
   const override = QUESTION_DISPLAY_OVERRIDES[q.id];
@@ -320,6 +326,8 @@ export default function App() {
   const [sourceFilter, setSourceFilter] = useState<'All' | 'RE-NEET 2026'>('All');
   const [difficultyFilter, setDifficultyFilter] = useState<'All' | 'Easy' | 'Medium' | 'Hard'>('All');
   const [solver, setSolver] = useState<Attempt | null>(null);
+  const [pendingAttempt, setPendingAttempt] = useState<PendingAttempt | null>(null);
+  const [instructionsAccepted, setInstructionsAccepted] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -627,7 +635,37 @@ export default function App() {
     const valid = mode === 'mock' ? pool : pool.filter(q => q.status !== 'dropped');
     if (!valid.length) return showToast('No questions are available for this set.');
     setResult(null);
+    setSubmitConfirmOpen(false);
+    if (mode === 'mock') {
+      setInstructionsAccepted(false);
+      setPendingAttempt({ pool: valid, title, duration });
+      return;
+    }
     setSolver({ attemptId: crypto.randomUUID(), ids: valid.map(q => q.id), answers: {}, marked: [], index: 0, mode, startedAt: Date.now(), title, duration });
+  }
+
+  function proceedWithMock() {
+    if (!pendingAttempt || !instructionsAccepted) return;
+    const attempt = pendingAttempt;
+    setPendingAttempt(null);
+    setSolver({
+      attemptId: crypto.randomUUID(),
+      ids: attempt.pool.map(q => q.id),
+      answers: {},
+      marked: [],
+      index: 0,
+      mode: 'mock',
+      startedAt: Date.now(),
+      title: attempt.title,
+      duration: attempt.duration,
+    });
+    setPaletteOpen(true);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  function cancelPendingMock() {
+    setPendingAttempt(null);
+    setInstructionsAccepted(false);
   }
 
   function openPracticeQuestion(q: Question) {
