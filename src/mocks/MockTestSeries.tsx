@@ -15,6 +15,8 @@ export type MockSeriesPaper = {
 type MockSeriesScore = MockAnalysisScore;
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
+  { id: 'coaching-2026-03-15-lets-start-01', title: 'LETS START #1 - 15-Mar', date: '2026-03-15', dateLabel: '15 Mar 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'neet-level-2026-03-29-builder', title: 'NEET Level Test - 29-Mar (BUILDER)', date: '2026-03-29', dateLabel: '29 Mar 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'coaching-2026-04-05-lets-start-02', title: 'LETS START #2 - 05-Apr', date: '2026-04-05', dateLabel: '5 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-04-12-builder', title: 'NEET Level Test - 12-Apr (BUILDER)', date: '2026-04-12', dateLabel: '12 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-04-26-builder', title: 'NEET Level Test - 26-Apr (BUILDER)', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
