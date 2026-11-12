@@ -114,6 +114,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
   }, []);
 
   const scoredCount = Object.keys(scores).length;
+  const orderedPapers = [...MOCK_TEST_SERIES].sort((a, b) => a.date.localeCompare(b.date));
 
   async function uploadMockPdf(paper: MockSeriesPaper, file: File) {
     if (!userId) { setUploadError('Sign in before uploading a mock PDF.'); return; }
@@ -154,9 +155,9 @@ export default function MockTestSeries({ onAttempt }: Props) {
         <div>
           <span className="section-kicker">YOUR COACHING TEST SERIES</span>
           <h2>Your mock test series.</h2>
-          <p>Six papers with subject-wise scorecards and a question review workspace.</p>
+          <p>All 13 coaching tests, arranged chronologically. Upload each original paper and attempt a fresh random question set from the website question bank.</p>
         </div>
-        <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} / 6 SCORED`}</span>
+        <span className="mock-series-count">{scoresLoading ? 'LOADING MARKS' : scoreLoadFailed ? 'MARKS UNAVAILABLE' : `${scoredCount} / ${MOCK_TEST_SERIES.length} SCORED`}</span>
       </div>
 
       {scoreLoadFailed && (
@@ -171,9 +172,9 @@ export default function MockTestSeries({ onAttempt }: Props) {
       )}
 
       <div className="mock-series-grid">
-        {MOCK_TEST_SERIES.map((paper, index) => {
-          const ready = paper.questionIds.length > 0;
+        {orderedPapers.map((paper, index) => {
           const score = scores[paper.id];
+          const pdfPath = uploadedPapers[paper.id] ?? score?.pdf_path ?? null;
           const subjectBreakdown = score ? [
             { label: 'Physics', short: 'PHY', marks: score.physics_score, correct: score.physics_correct, incorrect: score.physics_incorrect, unanswered: score.physics_unanswered },
             { label: 'Chemistry', short: 'CHEM', marks: score.chemistry_score, correct: score.chemistry_correct, incorrect: score.chemistry_incorrect, unanswered: score.chemistry_unanswered },
@@ -185,32 +186,34 @@ export default function MockTestSeries({ onAttempt }: Props) {
             <article className="mock-series-card" key={paper.id}>
               <div className="mock-series-card-top">
                 <span className="mock-series-index">TEST {String(index + 1).padStart(2, '0')}</span>
-                <span className={ready ? 'mock-series-state ready' : 'mock-series-state'}>{ready ? 'PAPER READY' : score ? 'SCORECARD READY' : 'PAPER NOT MAPPED'}</span>
+                <span className="mock-series-state ready">{score ? 'SCORECARD READY' : 'READY TO ATTEMPT'}</span>
               </div>
               <h3>{paper.title}</h3>
               <div className="mock-series-date">
                 <span aria-hidden="true">◷</span>
                 <span>Test date: {paper.dateLabel}</span>
               </div>
+              <div className="mock-series-format">{paper.questionCount} questions <i>·</i> {paper.durationMinutes} minutes</div>
               <div className="mock-series-pdf-row">
-                {score?.pdf_path ? (
-                  <a className="mock-series-pdf-link" href={publicPdfUrl(score.pdf_path)} target="_blank" rel="noreferrer">Open question paper PDF ↗</a>
-                ) : (
-                  <label className="mock-series-pdf-upload">
-                    {uploadingKey === paper.id ? 'Uploading PDF…' : 'Add question paper PDF'}
-                    <input
-                      type="file"
-                      accept="application/pdf,.pdf"
-                      disabled={uploadingKey !== null}
-                      onChange={event => {
-                        const selected = event.currentTarget.files?.[0];
-                        if (selected) void uploadMockPdf(paper, selected);
-                        event.currentTarget.value = '';
-                      }}
-                    />
-                  </label>
+                {pdfPath && (
+                  <a className="mock-series-pdf-link" href={publicPdfUrl(pdfPath)} target="_blank" rel="noreferrer">Open question paper PDF ↗</a>
                 )}
-                <a className="mock-series-omr-link" href={omrUrls[paper.id]} target="_blank" rel="noreferrer">OMR sheet ↗</a>
+                <label className="mock-series-pdf-upload">
+                  {uploadingKey === paper.id ? 'Uploading PDF…' : pdfPath ? 'Replace paper PDF' : 'Upload question paper PDF'}
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    disabled={uploadingKey !== null}
+                    onChange={event => {
+                      const selected = event.currentTarget.files?.[0];
+                      if (selected) void uploadMockPdf(paper, selected);
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                </label>
+                {omrUrls[paper.id] && (
+                  <a className="mock-series-omr-link" href={omrUrls[paper.id]} target="_blank" rel="noreferrer">OMR sheet ↗</a>
+                )}
               </div>
               <div className="mock-series-goal">
                 <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'RECONSTRUCTED SCORE') : 'SCORE PENDING'}</span>
@@ -237,29 +240,11 @@ export default function MockTestSeries({ onAttempt }: Props) {
                   {activeAnalysis?.paper.id === paper.id ? 'Close analysis' : 'View full analysis ↗'}
                 </button>
               )}
-              {ready ? (
-                <button
-                  className="mock-series-attempt"
-                  onClick={() => onAttempt(paper)}
-                >
-                  Attempt paper →
-                </button>
-              ) : score?.pdf_path ? (
-                <a
-                  className="mock-series-attempt mock-series-paper-review"
-                  href={publicPdfUrl(score.pdf_path)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Review paper PDF ↗
-                </a>
-              ) : (
-                <button className="mock-series-attempt" disabled>
-                  Paper PDF unavailable
-                </button>
-              )}
+              <button className="mock-series-attempt" onClick={() => onAttempt(paper)}>
+                Attempt test →
+              </button>
               <small className="mock-series-foot">
-                {ready ? 'Opens the timed test interface' : 'Open the question paper or OMR sheet above to review the original test.'}
+                A fresh random set of {paper.questionCount} questions is drawn from the website question bank on every attempt.
               </small>
             </article>
           );
@@ -301,6 +286,7 @@ const css = `
 .mock-series-card h3{margin:13px 0 7px;color:var(--text);font-size:14px;letter-spacing:-.25px}
 .mock-series-date{display:flex;gap:7px;align-items:center;color:var(--app-muted);font-size:9px}
 .mock-series-date span:first-child{color:var(--apple-blue);font-size:13px}
+.mock-series-format{margin-top:7px;color:var(--app-muted);font-size:8px;letter-spacing:.02em}.mock-series-format i{font-style:normal;margin:0 4px;color:var(--apple-blue)}
 .mock-series-goal{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--app-line)}
 .mock-series-goal span{color:var(--app-muted);font-size:7px;font-weight:900;letter-spacing:.09em}
 .mock-series-goal b{color:var(--text);font-size:12px}
