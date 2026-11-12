@@ -139,6 +139,149 @@ function getQuestionDisplay(q: Question) {
 
   return { stem: raw, options: supplied.length >= 4 ? supplied.slice(0, 4) : OPTION_LABELS.map(x => `Choice ${x}`) };
 }
+const cbtDesktopLayoutCss = `
+@media (min-width:761px) {
+  .cbt-shell {
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .cbt-topbar {
+    flex:0 0 72px!important;
+    height:72px!important;
+    min-height:72px!important;
+    box-sizing:border-box!important;
+  }
+  .cbt-layout {
+    display:grid!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    flex:1 1 auto!important;
+    grid-template-columns:minmax(0,1fr) minmax(320px,380px)!important;
+    align-items:stretch!important;
+    gap:22px!important;
+    margin:0!important;
+    padding:22px clamp(18px,2vw,36px) 14px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  .cbt-question-area {
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:12px clamp(10px,1.2vw,22px) 22px!important;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(130,145,158,.45) transparent;
+  }
+  .cbt-question-head,
+  .cbt-instruction-strip {
+    width:100%!important;
+    max-width:1240px!important;
+  }
+  .cbt-question-card {
+    width:100%!important;
+    max-width:1240px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+  }
+  .cbt-question-text {
+    max-width:1080px!important;
+    font-size:clamp(19px,1.12vw,22px)!important;
+    line-height:1.62!important;
+  }
+  .cbt-options {
+    width:100%!important;
+    max-width:1180px!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+  }
+  .cbt-option {
+    min-width:0!important;
+    min-height:70px!important;
+    align-items:center!important;
+  }
+  .cbt-option-label {
+    min-width:0!important;
+    overflow-wrap:anywhere!important;
+  }
+  .cbt-palette {
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    transform:none!important;
+    box-sizing:border-box!important;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(130,145,158,.45) transparent;
+  }
+  .cbt-palette.closed {
+    display:none!important;
+  }
+  .cbt-footer {
+    position:relative!important;
+    inset:auto!important;
+    flex:0 0 78px!important;
+    width:100%!important;
+    height:78px!important;
+    min-height:78px!important;
+    box-sizing:border-box!important;
+  }
+}
+@media (min-width:1500px) {
+  .cbt-layout {
+    grid-template-columns:minmax(0,1fr) 390px!important;
+    gap:26px!important;
+    padding-left:clamp(28px,2.4vw,48px)!important;
+    padding-right:clamp(28px,2.4vw,48px)!important;
+  }
+  .cbt-question-area {
+    padding-left:clamp(14px,1.4vw,28px)!important;
+    padding-right:clamp(14px,1.4vw,28px)!important;
+  }
+  .cbt-question-card {
+    max-width:1320px!important;
+  }
+  .cbt-options {
+    max-width:1280px!important;
+  }
+}
+@media (min-width:761px) and (max-width:1050px) {
+  .cbt-layout {
+    grid-template-columns:minmax(0,1fr) 300px!important;
+    gap:14px!important;
+    padding:16px 14px 10px!important;
+  }
+  .cbt-question-area {
+    padding:8px 4px 18px!important;
+  }
+  .cbt-question-card {
+    padding:22px!important;
+  }
+  .cbt-palette {
+    padding:13px!important;
+  }
+}
+`;
+
 const examInstructionsCss = `
 
 .exam-instructions-overlay{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(4,8,11,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
@@ -1287,6 +1430,7 @@ export default function App() {
     };
     const isMock = solver.mode === 'mock';
     return <div className="cbt-shell">
+      <style>{cbtDesktopLayoutCss}</style>
       <header className="cbt-topbar">
         <div className="cbt-brand cbt-brand-wordmark"><div><strong>neet<span>prep</span></strong><small>{solver.title}</small></div></div>
         <div className="cbt-section-tabs">{(['Physics','Chemistry','Biology'] as Question['subject'][]).map(subject => { const first = solver.ids.findIndex(id => (questions.find(q => q.id === id) as Question | undefined)?.subject === subject); return <button key={subject} className={current.subject === subject ? 'active' : ''} disabled={first < 0} onClick={() => first >= 0 && jumpToQuestion(first)}>{subject}</button>; })}</div>
