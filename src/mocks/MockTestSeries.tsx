@@ -36,6 +36,21 @@ type Props = {
   onAttempt: (paper: MockSeriesPaper) => void;
 };
 
+function getMockSubmissionDisplayDate(date: string) {
+  // Legacy score rows have no actual submitted_at value, so show the requested
+  // mock-date display with a clearly disclosed default time.
+  const mockDateAtDefaultTime = new Date(`${date}T14:15:00+05:30`);
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Kolkata',
+  }).format(mockDateAtDefaultTime);
+}
+
 export default function MockTestSeries({ onAttempt }: Props) {
   const [scores, setScores] = useState<Record<string, MockSeriesScore>>({});
   const [uploadedPapers, setUploadedPapers] = useState<Record<string, string>>({});
@@ -219,6 +234,13 @@ export default function MockTestSeries({ onAttempt }: Props) {
                 <span aria-hidden="true">◷</span>
                 <span>Test date: {paper.dateLabel}</span>
               </div>
+              {score && (
+                <div className="mock-series-submitted">
+                  <span aria-hidden="true">↗</span>
+                  <span>Submitted on: <b>{getMockSubmissionDisplayDate(paper.date)}</b></span>
+                  <small title="This is a display default. The legacy score record does not contain an actual submission timestamp.">Default time · 2:15 PM</small>
+                </div>
+              )}
               <div className="mock-series-format">{paper.questionCount} questions <i>·</i> {paper.durationMinutes} minutes</div>
               <div className="mock-series-pdf-row">
                 {pdfPath ? (
@@ -326,6 +348,12 @@ const css = `
 .mock-series-state.ready{background:rgba(47,190,137,.10);color:#63cda1}
 .mock-series-card h3{margin:13px 0 7px;color:var(--text);font-size:14px;letter-spacing:-.25px}
 .mock-series-date{display:flex;gap:7px;align-items:center;color:var(--app-muted);font-size:9px}
+
+.mock-series-submitted{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;color:var(--text);font-size:9px;line-height:1.45}
+.mock-series-submitted>span:first-child{color:var(--accent);font-size:11px}
+.mock-series-submitted b{font-weight:800;color:var(--text)}
+.mock-series-submitted small{color:var(--app-muted);font-size:8px;padding:3px 6px;border-radius:6px;background:color-mix(in srgb,var(--text) 5%,transparent)}
+
 .mock-series-date span:first-child{color:var(--apple-blue);font-size:13px}
 .mock-series-format{margin-top:7px;color:var(--app-muted);font-size:8px;letter-spacing:.02em}.mock-series-format i{font-style:normal;margin:0 4px;color:var(--apple-blue)}
 .mock-series-goal{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--app-line)}
