@@ -15,10 +15,10 @@ export type MockSeriesPaper = {
 type MockSeriesScore = MockAnalysisScore;
 
 export const MOCK_TEST_SERIES: MockSeriesPaper[] = [
-  { id: 'coaching-2026-04-05-lets-start-02', title: 'LET'S START #2 - 05-Apr', date: '2026-04-05', dateLabel: '5 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'coaching-2026-04-05-lets-start-02', title: 'LETS START #2 - 05-Apr', date: '2026-04-05', dateLabel: '5 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-04-12-builder', title: 'NEET Level Test - 12-Apr (BUILDER)', date: '2026-04-12', dateLabel: '12 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-04-26-builder', title: 'NEET Level Test - 26-Apr (BUILDER)', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
-  { id: 'coaching-2026-04-26-lets-start-03', title: 'LET'S START #3 - 26-Apr', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
+  { id: 'coaching-2026-04-26-lets-start-03', title: 'LETS START #3 - 26-Apr', date: '2026-04-26', dateLabel: '26 Apr 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-05-20-120q', title: 'NEET Level Test (120 Q) - 20-May (Only Online)', date: '2026-05-20', dateLabel: '20 May 2026', questionIds: [], questionCount: 120, durationMinutes: 120 },
   { id: 'neet-level-2026-06-14', title: 'NEET Level Test - 14-Jun', date: '2026-06-14', dateLabel: '14 Jun 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
   { id: 'neet-level-2026-07-12', title: 'NEET Level Test - 12-Jul', date: '2026-07-12', dateLabel: '12 Jul 2026', questionIds: [], questionCount: 180, durationMinutes: 180 },
