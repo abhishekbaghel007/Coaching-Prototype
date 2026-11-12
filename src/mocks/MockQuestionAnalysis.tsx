@@ -399,7 +399,6 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
         </div>
 
         <footer className="mock-analysis-footer">
-          <span>Question-level choices are estimates derived from the saved subject totals, not OMR-matched responses.</span>
           <button type="button" onClick={onClose}>Close analysis</button>
         </footer>
       </section>
