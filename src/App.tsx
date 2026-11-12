@@ -113,7 +113,7 @@ const QUESTION_DISPLAY_OVERRIDES: Record<string, { stem: string; options: string
 };
 
 function shouldUseOriginalScan(q: Question) {
-  const sourceIndex = Number(String(q.id).match(/-q(\\d+)$/)?.[1] ?? 0);
+  const sourceIndex = Number(String(q.id).match(/-q(\d+)$/)?.[1] ?? 0);
   return sourceIndex > 10 && Number.isFinite(q.sourcePage);
 }
 
