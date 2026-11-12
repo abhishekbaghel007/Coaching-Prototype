@@ -230,6 +230,53 @@ function scoreAttempt(ids: string[], answers: Record<string, number>) {
   return { correct, incorrect, unanswered, dropped, score: correct * 4 - incorrect };
 }
 
+function shuffleItems<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function buildRandomMockQuestionSet(pool: Question[], requestedCount: number): Question[] {
+  const count = Math.min(Math.max(1, requestedCount), pool.length);
+  const subjects: Array<{ name: Question['subject']; weight: number }> = [
+    { name: 'Physics', weight: 1 },
+    { name: 'Chemistry', weight: 1 },
+    { name: 'Biology', weight: 2 },
+  ];
+  const totalWeight = subjects.reduce((sum, item) => sum + item.weight, 0);
+  const quotas = subjects.map(item => {
+    const exact = count * item.weight / totalWeight;
+    return { name: item.name, amount: Math.floor(exact), fraction: exact - Math.floor(exact) };
+  });
+  let assigned = quotas.reduce((sum, item) => sum + item.amount, 0);
+  while (assigned < count) {
+    const next = [...quotas].sort((a, b) => b.fraction - a.fraction)[0];
+    next.amount += 1;
+    next.fraction = -1;
+    assigned += 1;
+  }
+
+  const selected: Question[] = [];
+  const selectedIds = new Set<string>();
+  quotas.forEach(quota => {
+    const subjectPool = shuffleItems(pool.filter(question => question.subject === quota.name));
+    subjectPool.slice(0, quota.amount).forEach(question => {
+      selected.push(question);
+      selectedIds.add(question.id);
+    });
+  });
+
+  if (selected.length < count) {
+    const remaining = shuffleItems(pool.filter(question => !selectedIds.has(question.id)));
+    selected.push(...remaining.slice(0, count - selected.length));
+  }
+
+  return shuffleItems(selected).slice(0, count);
+}
+
 function getSubjectStats(answerHistory: AnswerRecord[]) {
   const stats: Record<string, { attempted: number; correct: number; incorrect: number }> = {
     Physics: { attempted: 0, correct: 0, incorrect: 0 },
@@ -866,12 +913,21 @@ export default function App() {
   function renderMocks() {
     return <main className="page mock-series-page">
       <MockTestSeries onAttempt={paper => {
-        const pool = paper.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean) as Question[];
-        if (!pool.length || pool.length !== paper.questionIds.length) {
-          showToast('This paper is not fully loaded yet.');
+        const mappedQuestions = paper.questionIds
+          .map(id => questions.find(question => question.id === id))
+          .filter(Boolean) as Question[];
+        const pool = mappedQuestions.length
+          ? shuffleItems(mappedQuestions)
+          : buildRandomMockQuestionSet(questions, paper.questionCount);
+
+        if (!pool.length) {
+          showToast('No questions are available for this test yet.');
           return;
         }
-        startAttempt(pool, 'mock', paper.title, 180 * 60);
+        if (pool.length < paper.questionCount) {
+          showToast('This test uses the available question bank (' + pool.length + ' questions).');
+        }
+        startAttempt(pool, 'mock', paper.title, paper.durationMinutes * 60);
         setPaletteOpen(true);
       }} />
     </main>;
