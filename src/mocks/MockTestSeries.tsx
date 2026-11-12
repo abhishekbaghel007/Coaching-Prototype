@@ -313,9 +313,6 @@ export default function MockTestSeries({ onAttempt }: Props) {
               <button className="mock-series-attempt" onClick={() => onAttempt(paper)}>
                 Attempt test →
               </button>
-              <small className="mock-series-foot">
-                A fresh random set of {paper.questionCount} questions is drawn from the website question bank on every attempt.
-              </small>
             </article>
           );
         })}
