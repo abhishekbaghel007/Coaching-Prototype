@@ -245,6 +245,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
           <button className="mock-analysis-close" type="button" onClick={onClose} aria-label="Close analysis">×</button>
         </header>
 
+        <div className="mock-analysis-content">
         <div className="mock-analysis-overview">
           <article className="mock-analysis-total-card">
             <span>OVERALL SCORE</span>
@@ -252,10 +253,12 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
             <div className="mock-analysis-total-track"><i style={{ width: `${Math.max(0, Math.min(100, (score.total_score / 720) * 100))}%` }} /></div>
             <small>{Math.round((score.total_score / 720) * 100)}% of maximum marks</small>
           </article>
+          <div className="mock-analysis-metrics">
           <div className="mock-analysis-metric"><span>CORRECT</span><b>{totals.correct}</b><small>+{totals.correct * 4} marks</small></div>
           <div className="mock-analysis-metric"><span>INCORRECT</span><b>{totals.incorrect}</b><small>-{totals.incorrect} marks</small></div>
           <div className="mock-analysis-metric"><span>UNANSWERED</span><b>{totals.unanswered}</b><small>0 marks</small></div>
           <div className="mock-analysis-metric"><span>ATTEMPTED</span><b>{totals.correct + totals.incorrect}<small> / 180</small></b><small>{Math.round(((totals.correct + totals.incorrect) / 180) * 100)}% attempt rate</small></div>
+          </div>
         </div>
 
         <div className="mock-analysis-section-title">
@@ -270,7 +273,7 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
               <article className="mock-analysis-subject-card" key={item.subject}>
                 <div className="mock-analysis-subject-top">
                   <div><b>{item.subject}</b><small>Q{item.start}–Q{item.end}</small></div>
-                  <strong>{item.marks}<small> / 180</small></strong>
+                  <div className="mock-analysis-subject-score"><strong>{item.marks}<small> / 180</small></strong><span>{insight.accuracy}% accuracy</span></div>
                 </div>
                 <div className="mock-analysis-progress"><i style={{ width: `${Math.max(0, Math.min(100, (item.marks / 180) * 100))}%` }} /></div>
                 <div className="mock-analysis-breakdown">
@@ -299,11 +302,23 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
         </div>
 
         <div className="mock-analysis-takeaway">
-          <span>02 / QUICK TAKEAWAY</span>
-          <p><b>Strongest:</b> {bestSubject.subject} ({bestSubject.marks}/180). <b>Needs most attention:</b> {weakestSubject.subject} ({weakestSubject.marks}/180).</p>
+          <div className="mock-analysis-takeaway-head"><span>02 / QUICK TAKEAWAY</span><small>YOUR PERFORMANCE SNAPSHOT</small></div>
+          <div className="mock-analysis-takeaway-grid">
+            <div className="mock-analysis-takeaway-point strongest">
+              <small>STRONGEST SUBJECT</small>
+              <b>{bestSubject.subject}</b>
+              <span>{bestSubject.marks} / 180 marks</span>
+            </div>
+            <div className="mock-analysis-takeaway-point focus">
+              <small>NEEDS MOST ATTENTION</small>
+              <b>{weakestSubject.subject}</b>
+              <span>{weakestSubject.marks} / 180 marks</span>
+            </div>
+          </div>
           <p>This score split records {totals.incorrect} incorrect answers and {totals.unanswered} unattempted questions. Prioritise the wrong-answer review first, then use timed practice to reduce blanks.</p>
         </div>
 
+        <section className="mock-analysis-question-panel">
         <div className="mock-analysis-question-heading">
           <div><span>03 / QUESTION-WISE REVIEW</span><h3>All 180 questions</h3></div>
           <label className="mock-analysis-search">
@@ -380,6 +395,8 @@ export default function MockQuestionAnalysis({ mockKey, mockTitle, score, onClos
             <div className="mock-analysis-no-results">No questions match these filters.</div>
           )}
         </div>
+        </section>
+        </div>
 
         <footer className="mock-analysis-footer">
           <span>Question-level choices are estimates derived from the saved subject totals, not OMR-matched responses.</span>
@@ -454,4 +471,69 @@ const css = [
   '.mock-analysis-footer>button{padding:9px 15px;border:0;border-radius:9px;background:var(--apple-blue);color:#fff;font-size:10px;font-weight:850;cursor:pointer}',
   '@media(max-width:780px){.mock-analysis-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.mock-analysis-total-card{grid-column:span 2}.mock-analysis-toolbar{align-items:flex-start;flex-direction:column}.mock-analysis-toolbar select{width:100%}}',
   '@media(max-width:580px){.mock-analysis-overlay{padding:8px;align-items:flex-end}.mock-analysis-dialog{max-height:calc(100vh - 16px);padding:15px;border-radius:18px 18px 10px 10px}.mock-analysis-subjects{grid-template-columns:1fr}.mock-analysis-question-row{grid-template-columns:52px minmax(70px,1fr) auto 18px;gap:7px;padding:9px 7px}.mock-analysis-question-id>small{font-size:7px}.mock-analysis-question-status>small{font-size:7px}.mock-analysis-answer{min-width:48px}.mock-analysis-answer.wrong-answer{display:none}.mock-analysis-status-mark{font-size:13px}.mock-analysis-breakdown{gap:8px}.mock-analysis-breakdown span{font-size:8px}.mock-analysis-list-meta{font-size:8px}}'
+  ".mock-analysis-overlay{padding:18px!important;background:radial-gradient(ellipse at 12% 8%,rgba(10,132,255,.13),transparent 35%),radial-gradient(ellipse at 90% 90%,rgba(229,179,87,.08),transparent 32%),rgba(3,7,13,.82)!important;backdrop-filter:blur(14px)!important}",
+  ".mock-analysis-dialog{width:min(1420px,calc(100vw - 44px))!important;max-height:calc(100dvh - 36px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important;border:1px solid color-mix(in srgb,var(--app-line) 85%,#fff 4%)!important;border-radius:24px!important;background:linear-gradient(150deg,color-mix(in srgb,var(--app-panel) 98%,#142a3e 2%),var(--app-panel) 74%)!important;box-shadow:0 36px 120px rgba(0,0,0,.56),0 1px 0 rgba(255,255,255,.035) inset!important}",
+  ".mock-analysis-header{flex:none!important;position:relative!important;z-index:2!important;align-items:center!important;padding:24px 30px 20px!important;border-bottom:1px solid var(--app-line)!important;background:linear-gradient(110deg,color-mix(in srgb,var(--apple-blue) 7%,var(--app-panel)),var(--app-panel) 58%)!important}",
+  ".mock-analysis-kicker{display:inline-flex!important;align-items:center!important;gap:8px!important;padding:6px 9px!important;border:1px solid color-mix(in srgb,var(--apple-blue) 22%,transparent)!important;border-radius:7px!important;background:color-mix(in srgb,var(--apple-blue) 9%,transparent)!important;font-size:8px!important;letter-spacing:.16em!important}",
+  ".mock-analysis-header h2{margin:11px 0 5px!important;font-size:clamp(25px,3vw,34px)!important;line-height:1.12!important;letter-spacing:-1.25px!important}",
+  ".mock-analysis-header p{font-size:11px!important;line-height:1.6!important}",
+  ".mock-analysis-close{width:42px!important;height:42px!important;border-radius:13px!important;background:color-mix(in srgb,var(--text) 4%,transparent)!important;font-size:22px!important;transition:background .18s ease,transform .18s ease!important}",
+  ".mock-analysis-close:hover{background:color-mix(in srgb,var(--apple-blue) 12%,transparent)!important;transform:rotate(90deg)!important}",
+  ".mock-analysis-content{min-height:0!important;flex:1 1 auto!important;overflow:auto!important;padding:22px 30px 26px!important;scrollbar-width:thin!important;scrollbar-color:color-mix(in srgb,var(--text) 22%,transparent) transparent!important;overscroll-behavior:contain!important}",
+  ".mock-analysis-overview{display:grid!important;grid-template-columns:minmax(250px,1.15fr) minmax(0,2fr)!important;gap:12px!important;align-items:stretch!important}",
+  ".mock-analysis-total-card{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;min-height:170px!important;padding:22px!important;border:1px solid color-mix(in srgb,var(--apple-blue) 24%,var(--app-line))!important;border-radius:18px!important;background:radial-gradient(circle at 100% 0%,color-mix(in srgb,var(--apple-blue) 16%,transparent),transparent 48%),linear-gradient(145deg,color-mix(in srgb,var(--apple-blue) 7%,var(--app-panel)),var(--app-panel))!important;overflow:hidden!important}",
+  ".mock-analysis-total-card>span{font-size:9px!important;letter-spacing:.14em!important}",
+  ".mock-analysis-total-card>strong{margin:11px 0 13px!important;font-size:clamp(36px,4vw,45px)!important;line-height:1!important;letter-spacing:-2px!important}",
+  ".mock-analysis-total-card>strong small{font-size:14px!important}",
+  ".mock-analysis-total-track{height:7px!important;margin-bottom:3px!important}",
+  ".mock-analysis-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}",
+  ".mock-analysis-metric{display:flex!important;flex-direction:column!important;justify-content:center!important;min-height:78px!important;padding:16px 18px!important;border-radius:16px!important;background:color-mix(in srgb,var(--text) 2.8%,var(--app-panel))!important;transition:border-color .18s ease,transform .18s ease!important}",
+  ".mock-analysis-metric:hover{border-color:color-mix(in srgb,var(--apple-blue) 35%,var(--app-line))!important;transform:translateY(-2px)!important}",
+  ".mock-analysis-metric>span{font-size:8px!important;letter-spacing:.13em!important}",
+  ".mock-analysis-metric>b{margin-top:8px!important;font-size:28px!important;line-height:1!important}",
+  ".mock-analysis-metric>small{margin-top:7px!important;font-size:9px!important}",
+  ".mock-analysis-section-title,.mock-analysis-question-heading{margin:30px 0 14px!important;align-items:flex-end!important}",
+  ".mock-analysis-section-title h3,.mock-analysis-question-heading h3{font-size:20px!important;letter-spacing:-.65px!important}",
+  ".mock-analysis-section-title>small{padding-bottom:2px!important;font-size:9px!important}",
+  ".mock-analysis-subjects{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}",
+  ".mock-analysis-subject-card{position:relative!important;display:flex!important;flex-direction:column!important;min-width:0!important;padding:19px 20px 17px!important;border-radius:17px!important;background:linear-gradient(145deg,color-mix(in srgb,var(--text) 3%,var(--app-panel)),var(--app-panel) 72%)!important;box-shadow:0 8px 24px rgba(0,0,0,.08)!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}",
+  ".mock-analysis-subject-card:hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--apple-blue) 28%,var(--app-line))!important;box-shadow:0 14px 34px rgba(0,0,0,.16)!important}",
+  ".mock-analysis-subject-card:before{content:\"\";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 4px 4px 0;background:var(--apple-blue)}",
+  ".mock-analysis-subject-card:nth-child(2):before{background:#d6a34f}.mock-analysis-subject-card:nth-child(3):before{background:#42b883}.mock-analysis-subject-card:nth-child(4):before{background:#9a83ee}",
+  ".mock-analysis-subject-top{margin-bottom:14px!important;align-items:center!important}",
+  ".mock-analysis-subject-top>div> b{font-size:14px!important;letter-spacing:-.2px!important}",
+  ".mock-analysis-subject-top>div>small{margin-top:3px!important;font-size:9px!important}",
+  ".mock-analysis-subject-score{display:grid!important;justify-items:end!important;gap:4px!important}",
+  ".mock-analysis-subject-score>strong{font-size:25px!important;line-height:1!important;letter-spacing:-.8px!important}",
+  ".mock-analysis-subject-score>strong>small{font-size:10px!important}",
+  ".mock-analysis-subject-score>span{padding:4px 7px!important;border-radius:6px!important;background:color-mix(in srgb,var(--apple-blue) 10%,transparent)!important;color:var(--apple-blue)!important;font-size:8px!important;font-weight:850!important}",
+  ".mock-analysis-progress{height:7px!important;background:color-mix(in srgb,var(--text) 9%,transparent)!important}",
+  ".mock-analysis-breakdown{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin-top:12px!important}",
+  ".mock-analysis-breakdown span{justify-content:flex-start!important;gap:6px!important;padding:7px 8px!important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent)!important;border-radius:8px!important;background:color-mix(in srgb,var(--text) 2.5%,transparent)!important;font-size:9px!important;white-space:nowrap!important}",
+  ".mock-analysis-breakdown .dot{width:7px!important;height:7px!important;flex:none!important}",
+  ".mock-analysis-insight{margin-top:14px!important;padding-top:13px!important}",
+  ".mock-analysis-insight>b{display:inline-flex!important;align-items:center!important;padding:5px 8px!important;border-radius:7px!important;background:color-mix(in srgb,var(--apple-blue) 8%,transparent)!important;color:var(--text)!important;font-size:9px!important}",
+  ".mock-analysis-insight>p{margin:8px 0 0!important;font-size:10px!important;line-height:1.65!important}",
+  ".mock-analysis-jump{align-self:flex-start!important;margin-top:13px!important;padding:9px 11px!important;border-radius:9px!important;font-size:9px!important;transition:background .15s ease,border-color .15s ease!important}",
+  ".mock-analysis-jump:hover{border-color:color-mix(in srgb,var(--apple-blue) 50%,var(--app-line))!important;background:color-mix(in srgb,var(--apple-blue) 8%,transparent)!important}",
+  ".mock-analysis-takeaway{margin-top:16px!important;padding:18px 20px!important;border:1px solid color-mix(in srgb,var(--apple-blue) 20%,var(--app-line))!important;border-radius:17px!important;background:linear-gradient(115deg,color-mix(in srgb,var(--apple-blue) 7%,var(--app-panel)),color-mix(in srgb,var(--text) 2%,var(--app-panel)))!important}",
+  ".mock-analysis-takeaway-head{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important}",
+  ".mock-analysis-takeaway-head>small{color:var(--app-muted)!important;font-size:8px!important;font-weight:850!important;letter-spacing:.12em!important}",
+  ".mock-analysis-takeaway-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:12px!important}",
+  ".mock-analysis-takeaway-point{display:grid!important;gap:5px!important;padding:12px 14px!important;border:1px solid var(--app-line)!important;border-radius:12px!important;background:color-mix(in srgb,var(--app-panel) 88%,transparent)!important}",
+  ".mock-analysis-takeaway-point>small{font-size:8px!important;font-weight:900!important;letter-spacing:.12em!important;color:var(--app-muted)!important}",
+  ".mock-analysis-takeaway-point>b{font-size:17px!important;letter-spacing:-.3px!important}",
+  ".mock-analysis-takeaway-point>span{font-size:9px!important;color:var(--app-muted)!important}",
+  ".mock-analysis-takeaway-point.strongest>b{color:#42b883!important}.mock-analysis-takeaway-point.focus>b{color:#d6a34f!important}",
+  ".mock-analysis-takeaway>p{margin:12px 0 0!important;font-size:10px!important;line-height:1.65!important}",
+  ".mock-analysis-question-panel{margin-top:18px!important;padding:19px 20px 20px!important;border:1px solid var(--app-line)!important;border-radius:18px!important;background:color-mix(in srgb,var(--text) 1.5%,var(--app-panel))!important}",
+  ".mock-analysis-question-heading{margin:0 0 14px!important}",
+  ".mock-analysis-toolbar{padding:11px!important;border:1px solid var(--app-line)!important;border-radius:12px!important;background:color-mix(in srgb,var(--text) 2%,transparent)!important}",
+  ".mock-analysis-filter-buttons button{padding:9px 11px!important;font-size:9px!important}",
+  ".mock-analysis-question-list{gap:7px!important}",
+  ".mock-analysis-question-row{padding:12px 14px!important;border-radius:11px!important;background:color-mix(in srgb,var(--text) 2%,var(--app-panel))!important}",
+  ".mock-analysis-footer{flex:none!important;margin:0!important;padding:14px 30px!important;border-top:1px solid var(--app-line)!important;background:color-mix(in srgb,var(--app-panel) 96%,#000 4%)!important}",
+  ".mock-analysis-footer>span{font-size:9px!important;line-height:1.5!important}",
+  "@media(max-width:900px){.mock-analysis-dialog{width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important}.mock-analysis-content{padding:18px 18px 22px!important}.mock-analysis-header{padding:20px 18px 17px!important}.mock-analysis-footer{padding:12px 18px!important}.mock-analysis-overview{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)!important}.mock-analysis-subject-card{padding:16px!important}.mock-analysis-breakdown span{font-size:8px!important;padding:6px!important}}",
+  "@media(max-width:620px){.mock-analysis-overlay{padding:6px!important;align-items:flex-end!important}.mock-analysis-dialog{width:100%!important;max-height:calc(100dvh - 12px)!important;border-radius:20px 20px 10px 10px!important}.mock-analysis-header{padding:17px 15px 14px!important}.mock-analysis-header h2{font-size:22px!important}.mock-analysis-header p{max-width:280px!important;font-size:10px!important}.mock-analysis-close{width:36px!important;height:36px!important}.mock-analysis-content{padding:15px 13px 18px!important}.mock-analysis-overview{grid-template-columns:1fr!important}.mock-analysis-total-card{min-height:142px!important}.mock-analysis-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.mock-analysis-metric{min-height:77px!important;padding:12px!important}.mock-analysis-metric>b{font-size:24px!important}.mock-analysis-section-title{align-items:flex-start!important;flex-direction:column!important;margin:24px 0 12px!important}.mock-analysis-section-title h3,.mock-analysis-question-heading h3{font-size:17px!important}.mock-analysis-subjects{grid-template-columns:1fr!important;gap:10px!important}.mock-analysis-takeaway{padding:14px!important}.mock-analysis-takeaway-head>small{display:none!important}.mock-analysis-takeaway-grid{gap:7px!important}.mock-analysis-takeaway-point{padding:10px!important}.mock-analysis-takeaway-point>b{font-size:14px!important}.mock-analysis-question-panel{padding:13px 10px!important}.mock-analysis-question-heading{align-items:flex-start!important;flex-direction:column!important}.mock-analysis-search{width:100%!important}.mock-analysis-search input{flex:1!important}.mock-analysis-toolbar{align-items:stretch!important;flex-direction:column!important}.mock-analysis-filter-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.mock-analysis-toolbar select{width:100%!important}.mock-analysis-list-meta{flex-wrap:wrap!important}.mock-analysis-footer{gap:8px!important;padding:11px 13px!important}.mock-analysis-footer>span{max-width:70%!important;font-size:8px!important}}"
 ].join('\n');
