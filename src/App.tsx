@@ -112,11 +112,6 @@ const QUESTION_DISPLAY_OVERRIDES: Record<string, { stem: string; options: string
   },
 };
 
-function shouldUseOriginalScan(q: Question) {
-  const sourceIndex = Number(String(q.id).match(/-q(\d+)$/)?.[1] ?? 0);
-  return sourceIndex > 10 && Number.isFinite(q.sourcePage);
-}
-
 function getQuestionDisplay(q: Question) {
   const override = QUESTION_DISPLAY_OVERRIDES[q.id];
   if (override) return override;
@@ -1098,9 +1093,7 @@ export default function App() {
     const subjectClass = current.subject.toLowerCase();
     const correct = answered && answerIsCorrect(current, selected);
     const showResult = answered;
-    const sourcePage = current.sourcePage;
     const display = getQuestionDisplay(current);
-    const scanOnly = shouldUseOriginalScan(current);
 
     return <div className="practice-overlay">
       <div className="practice-shell">
@@ -1129,15 +1122,9 @@ export default function App() {
               <div><span className={`practice-subject ${subjectClass}`}>{current.subject}</span><span className="practice-qmeta">Question {qIndex + 1} · {current.difficulty}</span></div>
               <div className="practice-card-actions"><button className={saved.includes(current.id) ? 'active' : ''} onClick={() => toggleSaved(current.id)}>▱</button><button onClick={() => setReportOpen(true)}>↗</button></div>
             </div>
-            {scanOnly && sourcePage ? (
-              <div className="question-source-scan">
-                <div className="question-source-scan-head"><b>ORIGINAL PAPER · PAGE {sourcePage}</b><a href={`/source-pages/page-${sourcePage}.jpg`} target="_blank" rel="noreferrer">Open full scan ↗</a></div>
-                <img src={`/source-pages/page-${sourcePage}.jpg`} alt={`Original scanned question paper page ${sourcePage}`} />
-                <p>Original scan shown so the question, diagrams and options remain readable.</p>
-              </div>
-            ) : <div className="practice-question-text">{display.stem}</div>}
+            <div className="practice-question-text">{display.stem}</div>
             <div className="practice-tags"><span>{current.source || 'NEET question'}</span><span>Level: {current.difficulty}</span>{current.status === 'dropped' && <span className="dropped-tag">Dropped by NTA</span>}</div>
-            {sourcePage && !scanOnly && <button className="practice-source-link" onClick={() => window.open(`/source-pages/page-${sourcePage}.jpg`, '_blank')}>View original paper scan ↗</button>}
+
           </div>
 
           <div className="practice-options-heading"><strong>Answer choices</strong><span>Select one option</span></div>
@@ -1146,7 +1133,7 @@ export default function App() {
               const isSelected = selected === i;
               const isCorrect = answered && answerIsCorrect(current, i);
               return <button key={label} className={`practice-option ${isSelected ? 'selected' : ''} ${showResult && isCorrect ? 'correct' : ''} ${showResult && isSelected && !isCorrect ? 'wrong' : ''}`} onClick={() => chooseAnswer(i)} disabled={current.status === 'dropped'}>
-                <span className="practice-option-number">{i + 1}</span><span className="practice-option-copy"><b>{label}</b>{scanOnly ? "Select option " + label + " from the scan" : display.options[i]}</span><span className="practice-option-state">{showResult && isCorrect ? '✓' : isSelected ? '●' : ''}</span>
+                <span className="practice-option-number">{i + 1}</span><span className="practice-option-copy"><b>{label}</b>{display.options[i]}</span><span className="practice-option-state">{showResult && isCorrect ? '✓' : isSelected ? '●' : ''}</span>
               </button>;
             })}
           </div>
@@ -1259,7 +1246,7 @@ export default function App() {
             </ol>
           </section>
 
-          <div className="exam-instructions-language-note">Please answer using the original question shown on the screen. Where a scanned paper page is displayed, use the printed question and options on that scan.</div>
+          <div className="exam-instructions-language-note">Every question and answer choice is displayed from the question data saved in NEETPrep.</div>
         </div>
 
         <footer className="exam-instructions-footer">
@@ -1281,14 +1268,12 @@ export default function App() {
     if (!solver || !current) return null;
     const selected = solver.answers[current.id];
     const answered = selected !== undefined;
-    const sourcePage = current.sourcePage;
     const answeredCount = Object.keys(solver.answers).length;
     const validIds = solver.ids.filter(id => (questions.find(q => q.id === id) as Question | undefined)?.status !== 'dropped');
     const notAnsweredCount = Math.max(0, validIds.length - validIds.filter(id => solver.answers[id] !== undefined).length);
     const markedCount = solver.marked.length;
     const currentNumber = solver.index + 1;
     const display = getQuestionDisplay(current);
-    const scanOnly = shouldUseOriginalScan(current);
     const paletteState = (id: string) => {
       const hasAnswer = solver.answers[id] !== undefined;
       const marked = solver.marked.includes(id);
@@ -1314,16 +1299,9 @@ export default function App() {
           <div className="cbt-instruction-strip"><span><b>+4</b> Correct</span><span><b>−1</b> Incorrect</span><span><b>0</b> Unanswered</span><span className="cbt-question-type">Single Correct Answer</span></div>
           <section className={`cbt-question-card ${current.status === 'dropped' ? 'cbt-dropped-card' : ''}`}>
             <div className="cbt-q-number">Question No. {currentNumber} {current.status === 'dropped' && <span className="cbt-dropped-badge">DROPPED BY NTA · NOT EVALUATED</span>}</div>
-            {scanOnly && sourcePage ? (
-              <div className="question-source-scan cbt-source-scan">
-                <div className="question-source-scan-head"><b>ORIGINAL PAPER · PAGE {sourcePage}</b><a href={`/source-pages/page-${sourcePage}.jpg`} target="_blank" rel="noreferrer">Open full scan ↗</a></div>
-                <img src={`/source-pages/page-${sourcePage}.jpg`} alt={`Original scanned question paper page ${sourcePage}`} />
-                <p>Original scan shown so the question, diagrams and options remain readable.</p>
-              </div>
-            ) : <div className="cbt-question-text">{display.stem}</div>}
-            <div className="cbt-source-toggle" hidden={scanOnly}><button onClick={() => sourcePage && window.open(`/source-pages/page-${sourcePage}.jpg`, '_blank')}>View original paper scan ↗</button><span>Use the scan for diagrams / exact option typography.</span></div>
+            <div className="cbt-question-text">{display.stem}</div>
             <div className="cbt-options-heading"><strong>Answer choices</strong><span>Select one option</span></div>
-            <div className="cbt-options">{OPTION_LABELS.map((label, i) => <button key={label} className={`cbt-option ${selected === i ? 'selected' : ''}`} onClick={() => chooseAnswer(i)} disabled={current.status === 'dropped'}><span className="option-radio">{selected === i ? '●' : '○'}</span><b>{label}.</b><span className="cbt-option-label">{scanOnly ? "Select option " + label + " from the scan" : display.options[i]}</span></button>)}</div>
+            <div className="cbt-options">{OPTION_LABELS.map((label, i) => <button key={label} className={`cbt-option ${selected === i ? 'selected' : ''}`} onClick={() => chooseAnswer(i)} disabled={current.status === 'dropped'}><span className="option-radio">{selected === i ? '●' : '○'}</span><b>{label}.</b><span className="cbt-option-label">{display.options[i]}</span></button>)}</div>
           </section>
           <div className="cbt-actions-mobile">
             <button className="cbt-mobile-tool" onClick={() => { if (solver.index > 0) jumpToQuestion(solver.index - 1); }} disabled={solver.index === 0}><span>‹</span><b>Back</b></button>
