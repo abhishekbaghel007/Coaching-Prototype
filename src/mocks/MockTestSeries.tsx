@@ -257,7 +257,7 @@ export default function MockTestSeries({ onAttempt }: Props) {
                 )}
               </div>
               <div className="mock-series-goal">
-                <span>{score ? (score.score_status === 'verified' ? 'VERIFIED SCORE' : 'RECONSTRUCTED SCORE') : 'SCORE PENDING'}</span>
+                <span>{score ? (score.score_status === 'verified' ? 'FINAL SCORE' : 'ESTIMATED SCORE') : 'SCORE PENDING'}</span>
                 <b>{score ? `${score.total_score} / 720` : '—'}</b>
               </div>
               {subjectBreakdown.length > 0 && (
